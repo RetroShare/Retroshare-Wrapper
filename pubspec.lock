@@ -43,15 +43,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.15.0"
-  eventsource:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: "elrepo.io"
-      resolved-ref: "4a5491e0281ede51705228d41647fb7982db7ecb"
-      url: "https://gitlab.com/elRepo.io/dart-eventsource/"
-    source: git
-    version: "0.2.3"
   fake_async:
     dependency: transitive
     description:
@@ -75,21 +66,14 @@ packages:
       name: http
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.13.0"
+    version: "0.12.2"
   http_parser:
     dependency: transitive
     description:
       name: http_parser
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.0.0"
-  logging:
-    dependency: transitive
-    description:
-      name: logging
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.11.4"
+    version: "3.1.4"
   matcher:
     dependency: transitive
     description:
@@ -151,13 +135,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.0"
-  sync:
-    dependency: transitive
-    description:
-      name: sync
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.2.0"
   term_glyph:
     dependency: transitive
     description:

@@ -10,13 +10,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http: ^0.13.0
+  http: ^0.12.0+2
    
   # Library used to manage RsEvents streams
-  eventsource:
-    git:
-      url: 'https://gitlab.com/elRepo.io/dart-eventsource/'
-      ref: elrepo.io
 
 dev_dependencies:
   flutter_test:

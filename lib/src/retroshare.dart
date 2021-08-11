@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:collection';
-import 'package:eventsource/eventsource.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:path/path.dart';
@@ -38,6 +37,8 @@ class AuthToken {
   get password => _password;
 
   AuthToken(this._username, this._password);
+  @override
+  String toString() => this.authToken;
 }
 
 /// Returns an authentication header to use for RS
@@ -91,14 +92,14 @@ Future<bool> isRetroshareRunning() async {
 // ////////////////////////////////////////////////////////////////////////////
 // / RS EVENTS
 // ////////////////////////////////////////////////////////////////////////////
-class RsEvents {
+/*class RsEvents {
   /// Register Event
   ///
   /// Where [eventType] is the enum type [RsEventType] that specifies what kind
   /// of event are we listening to.
   ///
   /// The callback return this StreamSubscription object and the Json response
-  static Future<StreamSubscription<Event>> registerEventsHandler(
+  /*static Future<StreamSubscription<Event>> registerEventsHandler(
       RsEventType eventType, Function callback, AuthToken authToken,
       {Function onError, String basicAuth}) async {
     await restartRSIfDown();
@@ -135,8 +136,9 @@ class RsEvents {
 //    rsEventsSubscriptions ??= Map();
 //    rsEventsSubscriptions[eventType] = streamSubscription;
     return streamSubscription;
-  }
+  }*/
 }
+*/
 
 // ////////////////////////////////////////////////////////////////////////////
 // / RAW MESSAGE PASSING
@@ -204,6 +206,19 @@ Future<Map<String, dynamic>> rsApiCall(
 // / SPECIFIC RETROSHARE OPERATIONS
 // ////////////////////////////////////////////////////////////////////////////
 
+class RsAccounts {
+  static Future<String> getCurrentAccountId(AuthToken authToken) async {
+    try {
+      final mPath = '/rsAccounts/getCurrentAccountId';
+      final response = await rsApiCall(mPath, authToken: authToken);
+      if (response['retval']) return response['id'];
+      throw Exception("No Account Registered");
+    } catch (err) {
+      throw Exception("something went wrong!");
+    }
+  }
+}
+
 class RsLoginHelper {
   /// Creates a Retroshare Account
   /// Returns the location to use the account from now on
@@ -218,7 +233,8 @@ class RsLoginHelper {
   /// Else do an `/rsLoginHelper/attemptLogin`.
   ///
   /// Return 0 if everything is Ok
-  static dynamic requestLogIn(dynamic selectedAccount, String password) async {
+  static Future<dynamic> requestLogIn(
+      dynamic selectedAccount, String password) async {
     var accountDetails = {
       'account': selectedAccount.locationId,
       'password': password
@@ -250,17 +266,18 @@ class RsLoginHelper {
       throw Exception('Failed to load response');
   }
 
-  Future<dynamic> getLocations() async {
+  static Future<dynamic> getLocations() async {
     final response = await http
         .get(Uri.parse('http://localhost:9092/rsLoginHelper/getLocations'));
 
     if (response.statusCode == 200) {
       return json.decode(response.body)['locations'];
     }
-    return null;
+    return [];
   }
 
-  Future<dynamic> requestAccountCreation(String username, String password,
+  static Future<dynamic> requestAccountCreation(
+      String username, String password,
       [String nodeName = 'Mobile']) async {
     final mParams = {
       "locationName": username,
@@ -273,18 +290,11 @@ class RsLoginHelper {
     };
 
     final response = await http.post(
-        Uri.parse('http://localhost:9092/rsLoginHelper/createLocationV2'),
+        'http://localhost:9092/rsLoginHelper/createLocationV2',
         body: json.encode(mParams));
     if (response.statusCode == 200) {
-      final resp = await json.decode(response.body);
-      if (!(resp is Map))
-        throw FormatException("response is not a Map");
-      else if (resp["retval"]["errorNumber"] != 0)
-        throw Exception("Failure creating location: " + jsonEncode(response));
-      else if (!(resp["locationId"] is String))
-        throw FormatException("location is not a String");
-
-      return response;
+      final resp = await jsonDecode(response.body);
+      return resp;
     } else {
       throw Exception('Failed to load response');
     }
@@ -311,23 +321,24 @@ class RsIdentity {
         });
 
     if (respSigned.statusCode == 200) {
+      print(json.decode(respSigned.body));
       return json.decode(respSigned.body)['ids'];
     }
-    throw Exception("something went wrong!");
+    return [];
   }
 
   static Future<dynamic> getOwnPseudonimousIds(AuthToken authToken) async {
     final respSigned = await http.get(
-        Uri.parse('http://127.0.0.1:9092/rsIdentity/getOwnSignedIds'),
+        Uri.parse('http://127.0.0.1:9092/rsIdentity/getOwnPseudonimousIds'),
         headers: {
           HttpHeaders.authorizationHeader:
               'Basic ' + base64.encode(utf8.encode('$authToken'))
         });
-
+    print(respSigned.body);
     if (respSigned.statusCode == 200) {
       return json.decode(respSigned.body)['ids'];
     }
-    throw Exception("something went wrong!");
+    return [];
   }
 
   static Future<bool> isKnownId(String sslId, AuthToken authToken) async {
@@ -358,7 +369,7 @@ class RsIdentity {
 
   static Future<Map> getIdDetails(
       String identityId, AuthToken authToken) async {
-    Map identityDetails;
+        
     final mPath = '/rsIdentity/getIdDetails';
     final mParams = {'id': identityId};
     var response =
@@ -373,8 +384,8 @@ class RsIdentity {
     if (response['retval'] != true) {
       throw Exception('Could not retrieve details for id $identityId');
     }
-    return response['details'];
-    ;
+    return response;
+    
   }
 
   ///  Get identities summaries list.
@@ -406,17 +417,17 @@ class RsIdentity {
     return response['idsInfo'];
   }
 
-  Future<Identity> createIdentity(
-      Identity identity, dynamic avatar, AuthToken authToken) async {
+  static Future<Identity> createIdentity(
+      Identity identity, RsGxsImage avatar, AuthToken authToken) async {
     var params = {
       'name': identity.name,
       'pseudonimous': !identity.signed,
       'pgpPassword': authToken.password
     };
-    if (identity.avatar != null) params['avatar'] = avatar.toJson();
+    if (avatar != null) params['avatar'] = avatar.toJson();
     var b = json.encode(params);
     final response = await http.post(
-        Uri.parse('http://127.0.0.1:9092/rsIdentity/createIdentity'),
+        'http://127.0.0.1:9092/rsIdentity/createIdentity',
         body: b,
         headers: {
           HttpHeaders.authorizationHeader:
@@ -425,14 +436,29 @@ class RsIdentity {
     if (response.statusCode == 200) {
       if (json.decode(response.body)['retval'])
         return Identity(json.decode(response.body)['id'], identity.signed,
-            identity.name, identity.avatar);
-      else
-        return Identity('');
+            identity.name, avatar?.base64String ?? null);
+      return Identity('');
     } else
       throw Exception('Failed to load response');
   }
 
-  Future<bool> setAutoAddFriendIdsAsContact(
+static Future<bool> addFriend(
+      String sslId, String gpgId, AuthToken authToken) async {
+    final response = await http.post(
+      'http://localhost:9092/rsPeers/addFriend',
+      headers: {
+        HttpHeaders.authorizationHeader:
+            'Basic ' + base64.encode(utf8.encode('$authToken'))
+      },
+      body: json.encode({'sslId': sslId, 'gpgId': gpgId}),
+    );
+
+    if (response.statusCode == 200) {
+    } else {
+      throw Exception('Failed to load response');
+    }
+  }
+  static Future<bool> setAutoAddFriendIdsAsContact(
       bool enabled, AuthToken authToken) async {
     final response = await http.post(
         Uri.parse(
@@ -459,8 +485,8 @@ class RsIdentity {
   /// If set to false, updating will require the profile passphrase.
   /// [pgpPassword] Profile passphrase, if non pseudonymous.
   /// @return false on error, true otherwise
-  Future<bool> updateIdentity(
-      Identity identity, dynamic avatar, AuthToken authToken) async {
+  static Future<bool> updateIdentity(
+      Identity identity, RsGxsImage avatar, AuthToken authToken) async {
     final params = {
       'name': identity.name,
       'id': identity.mId,
@@ -502,7 +528,8 @@ class RsIdentity {
     return response['retval'];
   }
 
-  Future<bool> deleteIdentity(Identity identity, AuthToken authToken) async {
+  static Future<bool> deleteIdentity(
+      Identity identity, AuthToken authToken) async {
     final response = await http.post(
         Uri.parse('http://127.0.0.1:9092/rsIdentity/deleteIdentity'),
         body: json.encode({'id': identity.mId}),
@@ -564,7 +591,6 @@ class RsPeers {
       throw Exception('Could not get short invite for $sslId');
     }
     return response['invite'].substring(31);
-    ;
   }
 
   static Future<bool> addSslOnlyFriend(
@@ -642,7 +668,9 @@ class RsPeers {
   }
 
   static Future<Location> getPeerDetails(
-      AuthToken authToken, String peerId) async {
+    String peerId,
+    AuthToken authToken,
+  ) async {
     final mPath = '/rsPeers/getPeerDetails';
     final mParams = {'sslId': peerId};
 
@@ -728,7 +756,6 @@ class RsPeers {
     if (response['retval'] != true) {
       throw Exception('Remove friend could not be completed');
     }
-
     return response['retval'];
   }
 }
@@ -878,15 +905,16 @@ class RsMsgs {
     return response['retval'];
   }
 
-  static Future<void> unsubscribeChatLobby(String lobbyId) async {
+  static Future<void> unsubscribeChatLobby(
+      String lobbyId, AuthToken authToken) async {
     var chatLobbyId = ChatLobbyId();
     chatLobbyId.xstr64 = lobbyId;
     var params = {
       'lobby_id': chatLobbyId.toJson(),
     };
 
-    final response =
-        await rsApiCall('/rsMsgs/unsubscribeChatLobby', params: params);
+    final response = await rsApiCall('/rsMsgs/unsubscribeChatLobby',
+        authToken: authToken, params: params);
   }
 
   static Future<bool> sendMessage(String chatId, String msgTxt,
@@ -907,17 +935,22 @@ class RsMsgs {
     return response['retval'];
   }
 
-  Future<bool> c(Chat chat) async {
+  static Future<dynamic> c(Chat chat, AuthToken authToken) async {
     var params = {
       'to': chat.interlocutorId,
       'from': chat.ownIdToUse,
       'notify': true
     };
-    final response =
-        await rsApiCall('/rsMsgs/initiateDistantChatConnexion', params: params);
-    return response['retval'];
+    final response = await rsApiCall('/rsMsgs/initiateDistantChatConnexion',
+        authToken: authToken, params: params);
+    return response;
   }
 
+  /// Get the chat status from [pid]
+  ///  #define RS_DISTANT_CHAT_STATUS_UNKNOWN			0x0000
+  ///  #define RS_DISTANT_CHAT_STATUS_TUNNEL_DN   		0x0001
+  ///  #define RS_DISTANT_CHAT_STATUS_CAN_TALK			0x0002
+  ///  #define RS_DISTANT_CHAT_STATUS_REMOTELY_CLOSED 	0x0003
   static Future<DistantChatPeerInfo> getDistantChatStatus(
       String pid, ChatMessage aaa) async {
     final response = await rsApiCall('/rsMsgs/sendChat', params: {'pid': pid});
@@ -927,10 +960,11 @@ class RsMsgs {
     return DistantChatPeerInfo.fromJson(response['info']);
   }
 
-  Future<List<VisibleChatLobbyRecord>> getUnsubscribedChatLobbies() async {
+  static Future<List<VisibleChatLobbyRecord>> getUnsubscribedChatLobbies(
+      AuthToken authToken) async {
     var unsubscribedChatLobby = <VisibleChatLobbyRecord>[];
     var chatLobbies = await rsApiCall('/rsMsgs/getListOfNearbyChatLobbies',
-        params: {'pid': pid});
+        authToken: authToken, params: {'pid': pid});
     for (VisibleChatLobbyRecord chat in chatLobbies['publicLobbies']) {
       var autosubs = await getLobbyAutoSubscribe(chat.lobbyId.xstr64);
       if (!autosubs) {
@@ -938,6 +972,27 @@ class RsMsgs {
       }
     }
     return unsubscribedChatLobby;
+  }
+
+  static Future<bool> joinChatLobby(
+      String chatId, String idToUse, AuthToken authToken) async {
+    final response = await http.post(
+      'http://127.0.0.1:9092/rsMsgs/joinVisibleChatLobby',
+      headers: {
+        HttpHeaders.authorizationHeader:
+            'Basic ' + base64.encode(utf8.encode('$authToken'))
+      },
+      body: json.encode({
+        'lobby_id': {'xstr64': chatId},
+        'own_id': idToUse
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      setLobbyAutoSubscribe(chatId);
+      return json.decode(response.body)['retval'];
+    } else
+      throw Exception('Failed to load response');
   }
 
   static Future<dynamic> getChatLobbyInfo(
@@ -956,7 +1011,7 @@ class RsMsgs {
       if (json.decode(response.body)['retval']) {
         return json.decode(response.body)['info'];
       }
-      return null;
+      throw Exception('Something went wrong!');
     } else
       throw Exception('Failed to load response');
   }
@@ -969,14 +1024,13 @@ class RsMsgs {
             'Basic ' + base64.encode(utf8.encode('$authToken'))
       },
     );
-    List<Chat> chatsList = [];
     if (response.statusCode == 200) {
       return json.decode(response.body)['cl_list'];
     } else
       throw Exception('Failed to load response');
   }
 
-  Future<List<Identity>> getLobbyParticipants(
+  static Future<dynamic> getLobbyParticipants(
       String lobbyId, AuthToken authToken) async {
     final response = await http.post(
       Uri.parse('http://127.0.0.1:9092/rsMsgs/getChatLobbyInfo'),
@@ -1774,7 +1828,7 @@ class RsGxsCircles {
 // ----------------------------------------------------------------------------
 // UTILITIES
 // ----------------------------------------------------------------------------
-
+/*
 /// Used to wait until file hash event
 ///
 /// Using the [RsEvents.registerEventsHandler] we wait until a
@@ -1816,6 +1870,7 @@ Future<String> waitForFileHash(filePath, AuthToken authToken) async {
   print('Resulting hash for $filePath is $resultHash');
   return resultHash;
 }
+*/
 
 /// Used to know if a directory is in the list of getSharedDirectories
 Future<bool> isDirectoryAlreadyShared(String filePath) async {

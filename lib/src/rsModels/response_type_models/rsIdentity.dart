@@ -10,10 +10,10 @@ class Identity {
   bool isContact;
 
   void set avatar(String avatar) {
-    this.avatar = avatar;
+    this._avatar = avatar;
   }
 
-  String get avatar => this.avatar;
+  String get avatar => this._avatar;
 
   Identity(String this.mId,
       [this.signed, name, avatar, this.isContact = false, this.pgpId]) {
