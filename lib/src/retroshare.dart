@@ -369,7 +369,6 @@ class RsIdentity {
 
   static Future<Map> getIdDetails(
       String identityId, AuthToken authToken) async {
-        
     final mPath = '/rsIdentity/getIdDetails';
     final mParams = {'id': identityId};
     var response =
@@ -385,7 +384,6 @@ class RsIdentity {
       throw Exception('Could not retrieve details for id $identityId');
     }
     return response;
-    
   }
 
   ///  Get identities summaries list.
@@ -442,7 +440,7 @@ class RsIdentity {
       throw Exception('Failed to load response');
   }
 
-static Future<bool> addFriend(
+  static Future<bool> addFriend(
       String sslId, String gpgId, AuthToken authToken) async {
     final response = await http.post(
       'http://localhost:9092/rsPeers/addFriend',
@@ -458,6 +456,7 @@ static Future<bool> addFriend(
       throw Exception('Failed to load response');
     }
   }
+
   static Future<bool> setAutoAddFriendIdsAsContact(
       bool enabled, AuthToken authToken) async {
     final response = await http.post(
@@ -850,7 +849,7 @@ class RsMsgs {
   }
 
   static Future<bool> createChatLobby(
-      String lobbyName, String idToUse, String lobbyTopic,
+      AuthToken authToken, String lobbyName, String idToUse, String lobbyTopic,
       {List<dynamic> inviteList = const [],
       bool public = true,
       bool anonymous = true}) async {
@@ -874,34 +873,33 @@ class RsMsgs {
       privacyType = 20;
     } else if (!public && !anonymous) privacyType = 16;
     req.lobbyPrivacyType = privacyType;
-
-    final response =
-        await rsApiCall('/rsMsgs/createChatLobby', params: req.toJson());
+    final response = await rsApiCall('/rsMsgs/createChatLobby',
+        authToken: authToken, params: req.toJson());
     if (response['retval']['xint64'] > 0) {
-      setLobbyAutoSubscribe(response['retval']['xint64']);
+      await setLobbyAutoSubscribe( response['retval']['xint64'].toString(),authToken);
       return true;
     }
     throw Exception('Failed to load response');
   }
 
-  static Future<void> setLobbyAutoSubscribe(String lobbyId,
+  static Future<void> setLobbyAutoSubscribe(String lobbyId, AuthToken authToken,
       [bool subs = true]) async {
     var chatLobbyId = ChatLobbyId();
     chatLobbyId.xstr64 = lobbyId;
     var params = {'lobby_id': chatLobbyId.toJson(), 'autoSubscribe': subs};
 
-    final response =
-        await rsApiCall('/rsMsgs/setLobbyAutoSubscribe', params: params);
+    final response = await rsApiCall('/rsMsgs/setLobbyAutoSubscribe',
+        authToken: authToken, params: params);
   }
 
-  static Future<bool> getLobbyAutoSubscribe(String lobbyId,
+  static Future<bool> getLobbyAutoSubscribe(String lobbyId, AuthToken authToken,
       [bool subs = true]) async {
     var chatLobbyId = ChatLobbyId();
     chatLobbyId.xstr64 = lobbyId;
     var params = {'lobby_id': chatLobbyId.toJson()};
 
-    final response =
-        await rsApiCall('/rsMsgs/setLobbyAutoSubscribe', params: params);
+    final response = await rsApiCall('/rsMsgs/setLobbyAutoSubscribe',
+        authToken: authToken, params: params);
     return response['retval'];
   }
 
@@ -917,7 +915,8 @@ class RsMsgs {
         authToken: authToken, params: params);
   }
 
-  static Future<bool> sendMessage(String chatId, String msgTxt,
+  static Future<bool> sendMessage(
+      String chatId, String msgTxt, AuthToken authToken,
       [ChatIdType type = ChatIdType.number2_]) async {
     var id = ChatId();
     id.type = type;
@@ -931,7 +930,8 @@ class RsMsgs {
     }
 
     var params = {'id': id.toJson(), 'msg': msgTxt};
-    final response = await rsApiCall('/rsMsgs/sendChat', params: params);
+    final response = await rsApiCall('/rsMsgs/sendChat',
+        authToken: authToken, params: params);
     return response['retval'];
   }
 
@@ -952,8 +952,9 @@ class RsMsgs {
   ///  #define RS_DISTANT_CHAT_STATUS_CAN_TALK			0x0002
   ///  #define RS_DISTANT_CHAT_STATUS_REMOTELY_CLOSED 	0x0003
   static Future<DistantChatPeerInfo> getDistantChatStatus(
-      String pid, ChatMessage aaa) async {
-    final response = await rsApiCall('/rsMsgs/sendChat', params: {'pid': pid});
+      AuthToken authToken, String pid, ChatMessage aaa) async {
+    final response = await rsApiCall('/rsMsgs/sendChat',
+        authToken: authToken, params: {'pid': pid});
     if (response['retval'] != true) {
       throw ('Error on getDistantChatStatus()');
     }
@@ -964,9 +965,11 @@ class RsMsgs {
       AuthToken authToken) async {
     var unsubscribedChatLobby = <VisibleChatLobbyRecord>[];
     var chatLobbies = await rsApiCall('/rsMsgs/getListOfNearbyChatLobbies',
-        authToken: authToken, params: {'pid': pid});
-    for (VisibleChatLobbyRecord chat in chatLobbies['publicLobbies']) {
-      var autosubs = await getLobbyAutoSubscribe(chat.lobbyId.xstr64);
+        authToken: authToken);
+    print(chatLobbies);
+    for (VisibleChatLobbyRecord chat in chatLobbies['public_lobbies']) {
+      var autosubs =
+          await getLobbyAutoSubscribe(chat.lobbyId.xstr64, authToken);
       if (!autosubs) {
         unsubscribedChatLobby.add(chat);
       }
@@ -989,7 +992,7 @@ class RsMsgs {
     );
 
     if (response.statusCode == 200) {
-      setLobbyAutoSubscribe(chatId);
+      setLobbyAutoSubscribe(chatId, authToken);
       return json.decode(response.body)['retval'];
     } else
       throw Exception('Failed to load response');

@@ -1,5 +1,4 @@
 
-
 part of rsModels;
 
 class RsInt64 {
