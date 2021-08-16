@@ -84,7 +84,6 @@ Future<bool> isRetroshareRunning() async {
     final response = await http.get(Uri.parse(reqUrl));
     return response != null && response.statusCode is int;
   } catch (err) {
-    print(err);
     return false;
   }
 }
@@ -321,7 +320,6 @@ class RsIdentity {
         });
 
     if (respSigned.statusCode == 200) {
-      print(json.decode(respSigned.body));
       return json.decode(respSigned.body)['ids'];
     }
     return [];
@@ -334,7 +332,6 @@ class RsIdentity {
           HttpHeaders.authorizationHeader:
               'Basic ' + base64.encode(utf8.encode('$authToken'))
         });
-    print(respSigned.body);
     if (respSigned.statusCode == 200) {
       return json.decode(respSigned.body)['ids'];
     }
@@ -876,7 +873,8 @@ class RsMsgs {
     final response = await rsApiCall('/rsMsgs/createChatLobby',
         authToken: authToken, params: req.toJson());
     if (response['retval']['xint64'] > 0) {
-      await setLobbyAutoSubscribe( response['retval']['xint64'].toString(),authToken);
+      await setLobbyAutoSubscribe(
+          response['retval']['xint64'].toString(), authToken);
       return true;
     }
     throw Exception('Failed to load response');
@@ -932,13 +930,14 @@ class RsMsgs {
     var params = {'id': id.toJson(), 'msg': msgTxt};
     final response = await rsApiCall('/rsMsgs/sendChat',
         authToken: authToken, params: params);
+    print(response);
     return response['retval'];
   }
 
   static Future<dynamic> c(Chat chat, AuthToken authToken) async {
     var params = {
-      'to': chat.interlocutorId,
-      'from': chat.ownIdToUse,
+      'to_pid': chat.interlocutorId,
+      'from_pid': chat.ownIdToUse,
       'notify': true
     };
     final response = await rsApiCall('/rsMsgs/initiateDistantChatConnexion',
@@ -953,7 +952,7 @@ class RsMsgs {
   ///  #define RS_DISTANT_CHAT_STATUS_REMOTELY_CLOSED 	0x0003
   static Future<DistantChatPeerInfo> getDistantChatStatus(
       AuthToken authToken, String pid, ChatMessage aaa) async {
-    final response = await rsApiCall('/rsMsgs/sendChat',
+    final response = await rsApiCall('/rsMsgs/getDistantChatStatus',
         authToken: authToken, params: {'pid': pid});
     if (response['retval'] != true) {
       throw ('Error on getDistantChatStatus()');
@@ -966,10 +965,10 @@ class RsMsgs {
     var unsubscribedChatLobby = <VisibleChatLobbyRecord>[];
     var chatLobbies = await rsApiCall('/rsMsgs/getListOfNearbyChatLobbies',
         authToken: authToken);
-    print(chatLobbies);
-    for (VisibleChatLobbyRecord chat in chatLobbies['public_lobbies']) {
+    for (var visible in chatLobbies['public_lobbies']) {
+      VisibleChatLobbyRecord chat = VisibleChatLobbyRecord.fromJson(visible);
       var autosubs =
-          await getLobbyAutoSubscribe(chat.lobbyId.xstr64, authToken);
+          await getLobbyAutoSubscribe(chat.lobbyId.xstr64, authToken) ?? true;
       if (!autosubs) {
         unsubscribedChatLobby.add(chat);
       }
@@ -1027,6 +1026,7 @@ class RsMsgs {
             'Basic ' + base64.encode(utf8.encode('$authToken'))
       },
     );
+
     if (response.statusCode == 200) {
       return json.decode(response.body)['cl_list'];
     } else
