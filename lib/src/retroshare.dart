@@ -27,19 +27,7 @@ String errToStr(Map<String, dynamic> cxx_std_error_condition) {
   return "${err["errorCategory"]} ${err["errorNumber"]} ${err["errorMessage"]}";
 }
 
-class AuthToken {
-  final String _username;
-  final String _password;
 
-  get authToken => this._username + ":" + this._password;
-
-  get username => _username;
-  get password => _password;
-
-  AuthToken(this._username, this._password);
-  @override
-  String toString() => this.authToken;
-}
 
 /// Returns an authentication header to use for RS
 String makeAuthHeader(String username, String password) =>
@@ -896,7 +884,7 @@ class RsMsgs {
     chatLobbyId.xstr64 = lobbyId;
     var params = {'lobby_id': chatLobbyId.toJson()};
 
-    final response = await rsApiCall('/rsMsgs/setLobbyAutoSubscribe',
+    final response = await rsApiCall('/rsMsgs/getLobbyAutoSubscribe',
         authToken: authToken, params: params);
     return response['retval'];
   }
@@ -930,7 +918,6 @@ class RsMsgs {
     var params = {'id': id.toJson(), 'msg': msgTxt};
     final response = await rsApiCall('/rsMsgs/sendChat',
         authToken: authToken, params: params);
-    print(response);
     return response['retval'];
   }
 
@@ -966,9 +953,10 @@ class RsMsgs {
     var chatLobbies = await rsApiCall('/rsMsgs/getListOfNearbyChatLobbies',
         authToken: authToken);
     for (var visible in chatLobbies['public_lobbies']) {
+      print(chatLobbies['public_lobbies'].length);
       VisibleChatLobbyRecord chat = VisibleChatLobbyRecord.fromJson(visible);
-      var autosubs =
-          await getLobbyAutoSubscribe(chat.lobbyId.xstr64, authToken) ?? true;
+      var autosubs =false;
+          /*await getLobbyAutoSubscribe(chat.lobbyId.xstr64, authToken) ?? true;*/
       if (!autosubs) {
         unsubscribedChatLobby.add(chat);
       }

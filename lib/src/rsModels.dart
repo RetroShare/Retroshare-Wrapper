@@ -20,3 +20,4 @@ part 'rsModels/request_type_models/req_create_chat_lobby.dart';
 part 'rsModels/response_type_models/rsLocation.dart';
 part 'rsModels/response_type_models/rsIdentity.dart';
 part 'rsModels/response_type_models/rsAccounts.dart';
+part 'rsModels/auth.dart';
