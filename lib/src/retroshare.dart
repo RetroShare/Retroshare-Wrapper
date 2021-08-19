@@ -27,8 +27,6 @@ String errToStr(Map<String, dynamic> cxx_std_error_condition) {
   return "${err["errorCategory"]} ${err["errorNumber"]} ${err["errorMessage"]}";
 }
 
-
-
 /// Returns an authentication header to use for RS
 String makeAuthHeader(String username, String password) =>
     'Basic ' + base64Encode(utf8.encode('$username:$password'));
@@ -177,16 +175,40 @@ Future<Map<String, dynamic>> rsApiCall(
   AuthToken authToken,
   Map<String, dynamic> params,
 }) async {
-  final reqUrl = 'http://localhost:9092${path}';
-  final response = await http
-      .post(Uri.parse(reqUrl), body: jsonEncode(params ?? {}), headers: {
-    HttpHeaders.authorizationHeader:
-        'Basic ' + base64.encode(utf8.encode('$authToken'))
-  });
-  if (response.statusCode == 200) {
-    return jsonDecode(response.body);
-  } else
-    throw Exception('Failed to load response');
+  try {
+    final reqUrl = 'http://localhost:9092${path}';
+    final response = await http
+        .post(Uri.parse(reqUrl), body: jsonEncode(params ?? {}), headers: {
+      HttpHeaders.authorizationHeader:
+          'Basic ' + base64.encode(utf8.encode('$authToken'))
+    });
+    // This mean that probably RS service is down.
+    if (response == null || !(response.statusCode is int))
+    // If restarted successfully try to call the API call again.
+    // This is dangerous, could enter to eternal recursive function.
+    // todo(kon): prevent recursive function without exit
+    if (await restartRSIfDown()) {
+      return rsApiCall(path, params: params, authToken: authToken);
+    }
+
+    // Can happen this with status code? I don't think so
+    if (response == null) throw Exception('Request failed: ' + reqUrl);
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else
+      throw Exception('Failed to load response');
+  } on SocketException {
+    // If RS is down throw a SocketException.
+    // Probably this can replace the line above that do the same
+    if (await restartRSIfDown()) {
+      return rsApiCall(path, params: params, authToken: authToken);
+    } else {
+      throw SocketException;
+    }
+  } catch (err) {
+    rethrow;
+  }
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -226,16 +248,9 @@ class RsLoginHelper {
       'account': selectedAccount.locationId,
       'password': password
     };
-
-    final response = await http.post(
-        Uri.parse("http://localhost:9092/rsLoginHelper/attemptLogin"),
-        body: json.encode(accountDetails));
-
-    if (response.statusCode == 200) {
-      return json.decode(response.body)['retval'];
-    } else {
-      throw Exception('Failed to load response');
-    }
+    final mPath = "/rsLoginHelper/attemptLogin";
+    final response = await rsApiCall(mPath, params: accountDetails);
+    return response['retval'];
   }
 
   /// Check if is logged in
@@ -244,23 +259,19 @@ class RsLoginHelper {
   /// the variables [authLocationId] or [authPassphrase] is null, (what mean
   /// that are not set).
   static Future<dynamic> checkLoggedIn() async {
-    final response = await http
-        .get(Uri.parse('http://localhost:9092/rsLoginHelper/isLoggedIn'));
-
-    if (response.statusCode == 200)
-      return json.decode(response.body)['retval'];
-    else
-      throw Exception('Failed to load response');
+    final mPath = '/rsLoginHelper/isLoggedIn';
+    final response = await rsApiCall(mPath);
+    return response['retval'];
   }
 
   static Future<dynamic> getLocations() async {
-    final response = await http
-        .get(Uri.parse('http://localhost:9092/rsLoginHelper/getLocations'));
-
-    if (response.statusCode == 200) {
-      return json.decode(response.body)['locations'];
+    try {
+      final mPath = '/rsLoginHelper/getLocations';
+      final response = await rsApiCall(mPath);
+      return response['locations'];
+    } catch (e) {
+      return [];
     }
-    return [];
   }
 
   static Future<dynamic> requestAccountCreation(
@@ -275,16 +286,9 @@ class RsLoginHelper {
        * options to avoid sending PGP password at each request. */
       "apiPass": password
     };
-
-    final response = await http.post(
-        'http://localhost:9092/rsLoginHelper/createLocationV2',
-        body: json.encode(mParams));
-    if (response.statusCode == 200) {
-      final resp = await jsonDecode(response.body);
-      return resp;
-    } else {
-      throw Exception('Failed to load response');
-    }
+    final mPath = '/rsLoginHelper/createLocationV2';
+    final response = await rsApiCall(mPath, params: mParams);
+    return response;
   }
 }
 
@@ -300,30 +304,23 @@ class RsIdentity {
 
   // Returns the ID of the default identity or creates one if there is none defined
   static Future<dynamic> getOwnSignedIdentity(AuthToken authToken) async {
-    final respSigned = await http.get(
-        Uri.parse('http://127.0.0.1:9092/rsIdentity/getOwnSignedIds'),
-        headers: {
-          HttpHeaders.authorizationHeader:
-              'Basic ' + base64.encode(utf8.encode('$authToken'))
-        });
-
-    if (respSigned.statusCode == 200) {
-      return json.decode(respSigned.body)['ids'];
+    try {
+      final mPath = '/rsIdentity/getOwnSignedIds';
+      final respSigned = await rsApiCall(mPath, authToken: authToken);
+      return respSigned['ids'];
+    } catch (e) {
+      return [];
     }
-    return [];
   }
 
   static Future<dynamic> getOwnPseudonimousIds(AuthToken authToken) async {
-    final respSigned = await http.get(
-        Uri.parse('http://127.0.0.1:9092/rsIdentity/getOwnPseudonimousIds'),
-        headers: {
-          HttpHeaders.authorizationHeader:
-              'Basic ' + base64.encode(utf8.encode('$authToken'))
-        });
-    if (respSigned.statusCode == 200) {
-      return json.decode(respSigned.body)['ids'];
+    try {
+      final mPath = '/rsIdentity/getOwnPseudonimousIds';
+      final respSigned = await rsApiCall(mPath, authToken: authToken);
+      return respSigned['ids'];
+    } catch (e) {
+      return [];
     }
-    return [];
   }
 
   static Future<bool> isKnownId(String sslId, AuthToken authToken) async {
@@ -402,61 +399,46 @@ class RsIdentity {
 
   static Future<Identity> createIdentity(
       Identity identity, RsGxsImage avatar, AuthToken authToken) async {
-    var params = {
-      'name': identity.name,
-      'pseudonimous': !identity.signed,
-      'pgpPassword': authToken.password
-    };
-    if (avatar != null) params['avatar'] = avatar.toJson();
-    var b = json.encode(params);
-    final response = await http.post(
-        'http://127.0.0.1:9092/rsIdentity/createIdentity',
-        body: b,
-        headers: {
-          HttpHeaders.authorizationHeader:
-              'Basic ' + base64.encode(utf8.encode('$authToken'))
-        });
-    if (response.statusCode == 200) {
-      if (json.decode(response.body)['retval'])
-        return Identity(json.decode(response.body)['id'], identity.signed,
-            identity.name, avatar?.base64String ?? null);
+    try {
+      var params = {
+        'name': identity.name,
+        'pseudonimous': !identity.signed,
+        'pgpPassword': authToken.password
+      };
+      if (avatar != null) params['avatar'] = avatar.toJson();
+      final mPath = '/rsIdentity/createIdentity';
+
+      final response =
+          await rsApiCall(mPath, authToken: authToken, params: params);
+      if (response['retval'])
+        return Identity(response['id'], identity.signed, identity.name,
+            avatar?.base64String ?? null);
       return Identity('');
-    } else
+    } catch (e) {
       throw Exception('Failed to load response');
+    }
   }
 
   static Future<bool> addFriend(
       String sslId, String gpgId, AuthToken authToken) async {
-    final response = await http.post(
-      'http://localhost:9092/rsPeers/addFriend',
-      headers: {
-        HttpHeaders.authorizationHeader:
-            'Basic ' + base64.encode(utf8.encode('$authToken'))
-      },
-      body: json.encode({'sslId': sslId, 'gpgId': gpgId}),
-    );
-
-    if (response.statusCode == 200) {
-    } else {
+    try {
+      final mPath = '/rsPeers/addFriend';
+      final mParams = {'sslId': sslId, 'gpgId': gpgId};
+      final response =
+          await rsApiCall(mPath, authToken: authToken, params: mParams);
+    } catch (e) {
       throw Exception('Failed to load response');
     }
   }
 
   static Future<bool> setAutoAddFriendIdsAsContact(
       bool enabled, AuthToken authToken) async {
-    final response = await http.post(
-        Uri.parse(
-            'http://127.0.0.1:9092/rsIdentity/setAutoAddFriendIdsAsContact'),
-        headers: {
-          HttpHeaders.authorizationHeader:
-              'Basic ' + base64.encode(utf8.encode('$authToken'))
-        },
-        body: jsonEncode({"enabled": enabled}));
-    if (response.statusCode == 200) {
-      if (jsonDecode(response.body)['retval']) return true;
-      return false;
-    }
-    throw Exception("Enable to load response");
+    final mPath = '/rsIdentity/setAutoAddFriendIdsAsContact';
+
+    final response = await rsApiCall(mPath,
+        authToken: authToken, params: {"enabled": enabled});
+
+    return response['retval'];
   }
 
   /// Update identity data (name, avatar...)
@@ -478,19 +460,12 @@ class RsIdentity {
       "pgpPassword": authToken.password
     };
     if (identity.avatar != null) params['avatar'] = avatar.toJson();
-    var b = json.encode(params);
-    final response = await http.post(
-        Uri.parse('http://127.0.0.1:9092/rsIdentity/updateIdentity'),
-        body: b,
-        headers: {
-          HttpHeaders.authorizationHeader:
-              'Basic ' + base64.encode(utf8.encode('$authToken'))
-        });
-    if (response.statusCode == 200) {
-      if (json.decode(response.body)['retval']) return true;
-      return false;
-    } else
-      throw Exception('Failed to load response');
+    final mPath = '/rsIdentity/updateIdentity';
+
+    final response =
+        await rsApiCall(mPath, authToken: authToken, params: params);
+
+    return response['retval'] == true;
   }
 
   /// Set/unset identity as contact
@@ -514,19 +489,10 @@ class RsIdentity {
 
   static Future<bool> deleteIdentity(
       Identity identity, AuthToken authToken) async {
-    final response = await http.post(
-        Uri.parse('http://127.0.0.1:9092/rsIdentity/deleteIdentity'),
-        body: json.encode({'id': identity.mId}),
-        headers: {
-          HttpHeaders.authorizationHeader:
-              'Basic ' + base64.encode(utf8.encode('$authToken'))
-        });
-
-    if (response.statusCode == 200) {
-      if (json.decode(response.body)['retval']) return true;
-      return false;
-    }
-    throw Exception("Something went wrong!");
+    final mPath = '/rsIdentity/deleteIdentity';
+    final response = await rsApiCall(mPath,
+        authToken: authToken, params: {'id': identity.mId});
+    return response['retval'] == true;
   }
 }
 
@@ -537,18 +503,11 @@ class RsIdentity {
 class RsPeers {
   /// get the certificate/invite for current identity
   static Future<String> getOwnCert(AuthToken authToken) async {
-    final response = await http.get(
-        Uri.parse('http://localhost:9092/rsPeers/GetRetroshareInvite'),
-        headers: {
-          HttpHeaders.authorizationHeader:
-              'Basic ' + base64.encode(utf8.encode('$authToken'))
-        });
+    final mPath = '/rsPeers/GetRetroshareInvite';
 
-    if (response.statusCode == 200) {
-      return json.decode(response.body)['retval'];
-    } else {
-      throw Exception('Failed to load response');
-    }
+    final response = await rsApiCall(mPath, authToken: authToken);
+
+    return response['retval'];
   }
 
   /// Get RetroShare short invite of the given peer
@@ -955,8 +914,8 @@ class RsMsgs {
     for (var visible in chatLobbies['public_lobbies']) {
       print(chatLobbies['public_lobbies'].length);
       VisibleChatLobbyRecord chat = VisibleChatLobbyRecord.fromJson(visible);
-      var autosubs =false;
-          /*await getLobbyAutoSubscribe(chat.lobbyId.xstr64, authToken) ?? true;*/
+      var autosubs = false;
+      /*await getLobbyAutoSubscribe(chat.lobbyId.xstr64, authToken) ?? true;*/
       if (!autosubs) {
         unsubscribedChatLobby.add(chat);
       }
@@ -966,78 +925,49 @@ class RsMsgs {
 
   static Future<bool> joinChatLobby(
       String chatId, String idToUse, AuthToken authToken) async {
-    final response = await http.post(
-      'http://127.0.0.1:9092/rsMsgs/joinVisibleChatLobby',
-      headers: {
-        HttpHeaders.authorizationHeader:
-            'Basic ' + base64.encode(utf8.encode('$authToken'))
-      },
-      body: json.encode({
-        'lobby_id': {'xstr64': chatId},
-        'own_id': idToUse
-      }),
-    );
+    final mPath = '/rsMsgs/joinVisibleChatLobby';
+    final mParams = {
+      'lobby_id': {'xstr64': chatId},
+      'own_id': idToUse
+    };
 
-    if (response.statusCode == 200) {
-      setLobbyAutoSubscribe(chatId, authToken);
-      return json.decode(response.body)['retval'];
-    } else
-      throw Exception('Failed to load response');
+    final response =
+        await rsApiCall(mPath, authToken: authToken, params: mParams);
+    await setLobbyAutoSubscribe(chatId, authToken);
+    return response['retval'];
   }
 
   static Future<dynamic> getChatLobbyInfo(
       String lobbyId, AuthToken authToken) async {
-    final response = await http.post(
-        Uri.parse('http://127.0.0.1:9092/rsMsgs/getChatLobbyInfo'),
-        headers: {
-          HttpHeaders.authorizationHeader:
-              'Basic ' + base64.encode(utf8.encode('$authToken'))
-        },
-        body: json.encode({
-          'id': {'xstr64': lobbyId}
-        }));
-
-    if (response.statusCode == 200) {
-      if (json.decode(response.body)['retval']) {
-        return json.decode(response.body)['info'];
-      }
-      throw Exception('Something went wrong!');
+    final mPath = '/rsMsgs/getChatLobbyInfo';
+    final mParams = {
+      'id': {'xstr64': lobbyId}
+    };
+    final response =
+        await rsApiCall(mPath, authToken: authToken, params: mParams);
+    if (response['retval']) {
+      return response['info'];
     } else
-      throw Exception('Failed to load response');
+      throw Exception('Something went wrong!');
   }
 
   static Future<dynamic> getSubscribedChatLobbies(AuthToken authToken) async {
-    final response = await http.get(
-      Uri.parse('http://127.0.0.1:9092/rsMsgs/getChatLobbyList'),
-      headers: {
-        HttpHeaders.authorizationHeader:
-            'Basic ' + base64.encode(utf8.encode('$authToken'))
-      },
-    );
-
-    if (response.statusCode == 200) {
-      return json.decode(response.body)['cl_list'];
-    } else
-      throw Exception('Failed to load response');
+    final mPath = '/rsMsgs/getChatLobbyList';
+    final response = await rsApiCall(mPath, authToken: authToken);
+    return response['cl_list'];
   }
 
   static Future<dynamic> getLobbyParticipants(
       String lobbyId, AuthToken authToken) async {
-    final response = await http.post(
-      Uri.parse('http://127.0.0.1:9092/rsMsgs/getChatLobbyInfo'),
-      headers: {
-        HttpHeaders.authorizationHeader:
-            'Basic ' + base64.encode(utf8.encode('$authToken'))
-      },
-      body: json.encode({
-        'id': {'xstr64': lobbyId}
-      }),
-    );
-    if (response.statusCode == 200) {
-      return json.decode(response.body)['info']['gxs_ids'];
+    final mParams = {
+      'id': {'xstr64': lobbyId}
+    };
+    final mPath = '/rsMsgs/getChatLobbyInfo';
+    final response =
+        await rsApiCall(mPath, authToken: authToken, params: mParams);
+
+      return response['info']['gxs_ids'];
     }
-    throw Exception('Failed to load response');
-  }
 }
 
 // ----------------------------------------------------------------------------
