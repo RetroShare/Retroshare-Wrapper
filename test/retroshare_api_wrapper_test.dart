@@ -1,7 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:retroshare_api_wrapper/retroshare_api_wrapper.dart';
-
 void main() {
   test('adds one to input values', () {
     final calculator = Calculator();

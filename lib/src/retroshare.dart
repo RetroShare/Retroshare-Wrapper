@@ -492,7 +492,7 @@ class RsIdentity {
     final mPath = '/rsIdentity/deleteIdentity';
     final response = await rsApiCall(mPath,
         authToken: authToken, params: {'id': identity.mId});
-    return response['retval'] == true;
+    return response['retval'] == false;
   }
 }
 
@@ -543,6 +543,14 @@ class RsPeers {
     final response =
         await rsApiCall(mPath, authToken: authToken, params: mParams);
 
+    return response['retval'] == true;
+  }
+
+  static Future<bool> isSslOnlyFriend(String sslId, AuthToken authToken) async {
+    final mPath = '/rsPeers/isSslOnlyFriend';
+    final mParams = {'sslId': sslId};
+    final response =
+        await rsApiCall(mPath, authToken: authToken, params: mParams);
     return response['retval'] == true;
   }
 
@@ -611,11 +619,11 @@ class RsPeers {
   }
 
   static Future<Location> getPeerDetails(
-    String peerId,
+    String sslId,
     AuthToken authToken,
   ) async {
     final mPath = '/rsPeers/getPeerDetails';
-    final mParams = {'sslId': peerId};
+    final mParams = {'sslId': sslId};
 
     final response =
         await rsApiCall(mPath, authToken: authToken, params: mParams);
@@ -624,6 +632,10 @@ class RsPeers {
       throw Exception('The details could not be retrieved');
     } else if (!(response['det'] is Map)) {
       throw Exception('The details are not valid');
+    }
+    if (!await isSslOnlyFriend(sslId, authToken)) {
+      await addSslOnlyFriend(authToken, response['det']['id'],
+          response['det']['gpg_id'], response['det']);
     }
 
     return Location(
@@ -966,8 +978,8 @@ class RsMsgs {
     final response =
         await rsApiCall(mPath, authToken: authToken, params: mParams);
 
-      return response['info']['gxs_ids'];
-    }
+    return response['info']['gxs_ids'];
+  }
 }
 
 // ----------------------------------------------------------------------------
