@@ -618,7 +618,7 @@ class RsPeers {
     return response['details'];
   }
 
-  static Future<Location> getPeerDetails(
+  static Future<Location> getPeerFriendDetails(
     String sslId,
     AuthToken authToken,
   ) async {
@@ -638,6 +638,32 @@ class RsPeers {
           response['det']['gpg_id'], response['det']);
     }
 
+    return Location(
+      response['det']['id'],
+      response['det']['gpg_id'],
+      response['det']['name'],
+      response['det']['location'],
+      response['det']['connectState'] != 0 &&
+          response['det']['connectState'] != 2 &&
+          response['det']['connectState'] != 3,
+    );
+  }
+
+  static Future<Location> getPeerDetails(
+    String sslId,
+    AuthToken authToken,
+  ) async {
+    final mPath = '/rsPeers/getPeerDetails';
+    final mParams = {'sslId': sslId};
+
+    final response =
+        await rsApiCall(mPath, authToken: authToken, params: mParams);
+
+    if (response['retval'] != true) {
+      throw Exception('The details could not be retrieved');
+    } else if (!(response['det'] is Map)) {
+      throw Exception('The details are not valid');
+    }
     return Location(
       response['det']['id'],
       response['det']['gpg_id'],
@@ -892,6 +918,25 @@ class RsMsgs {
     return response['retval'];
   }
 
+  static Future<void> denyLobbyInvite(
+      String lobbyId, AuthToken authToken) async {
+    final response = await rsApiCall('/rsMsgs/denyLobbyInvite',
+        authToken: authToken,
+        params: {
+          'id': {'xstr64': lobbyId}
+        });
+  }
+
+  static Future<bool> acceptLobbyInvite(
+      String lobbyId, String rsgxsId, AuthToken authToken) async {
+    final mPath = '/rsMsgs/acceptLobbyInvite';
+    final response = await rsApiCall(mPath, authToken: authToken, params: {
+      'id': {'xstr64': lobbyId},
+      'identity': rsgxsId
+    });
+    return response['retval'];
+  }
+
   static Future<dynamic> c(Chat chat, AuthToken authToken) async {
     var params = {
       'to_pid': chat.interlocutorId,
@@ -924,13 +969,9 @@ class RsMsgs {
     var chatLobbies = await rsApiCall('/rsMsgs/getListOfNearbyChatLobbies',
         authToken: authToken);
     for (var visible in chatLobbies['public_lobbies']) {
-      print(chatLobbies['public_lobbies'].length);
       VisibleChatLobbyRecord chat = VisibleChatLobbyRecord.fromJson(visible);
-      var autosubs = false;
       /*await getLobbyAutoSubscribe(chat.lobbyId.xstr64, authToken) ?? true;*/
-      if (!autosubs) {
         unsubscribedChatLobby.add(chat);
-      }
     }
     return unsubscribedChatLobby;
   }
@@ -945,7 +986,7 @@ class RsMsgs {
 
     final response =
         await rsApiCall(mPath, authToken: authToken, params: mParams);
-    await setLobbyAutoSubscribe(chatId, authToken);
+    if (response['retval']) await setLobbyAutoSubscribe(chatId, authToken);
     return response['retval'];
   }
 
@@ -963,6 +1004,13 @@ class RsMsgs {
       throw Exception('Something went wrong!');
   }
 
+  static Future<dynamic> getPendingChatLobbyInvites(AuthToken authToken) async {
+    final mPath = '/rsMsgs/getPendingChatLobbyInvites';
+    final response = await rsApiCall(mPath, authToken: authToken);
+    print(response);
+    return response['invites'];
+  }
+
   static Future<dynamic> getSubscribedChatLobbies(AuthToken authToken) async {
     final mPath = '/rsMsgs/getChatLobbyList';
     final response = await rsApiCall(mPath, authToken: authToken);
@@ -977,7 +1025,6 @@ class RsMsgs {
     final mPath = '/rsMsgs/getChatLobbyInfo';
     final response =
         await rsApiCall(mPath, authToken: authToken, params: mParams);
-
     return response['info']['gxs_ids'];
   }
 }
