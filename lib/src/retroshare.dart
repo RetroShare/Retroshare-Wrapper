@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:collection';
+import 'package:eventsource/eventsource.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:path/path.dart';
@@ -12,11 +13,10 @@ String _retroshareServicePrefix; // Used for remote control feature
 const RETROSHARE_HOST = '127.0.0.1';
 const RETROSHARE_PORT = 9092;
 const RETROSHARE_SERVICE_PREFIX = 'http://$RETROSHARE_HOST:$RETROSHARE_PORT';
-const RETROSHARE_API_USER = 'elrepo.io';
 
 const RS_MSG_PENDING = 0x0002;
 
-const RETROSHARE_CHANNEL_NAME = 'net.altermundi.elrepoio/retroshare';
+const RETROSHARE_CHANNEL_NAME = 'cc.retroshare.retroshare/retroshare';
 
 void dbg(String msg) {
   stderr.writeln(msg);
@@ -77,14 +77,14 @@ Future<bool> isRetroshareRunning() async {
 // ////////////////////////////////////////////////////////////////////////////
 // / RS EVENTS
 // ////////////////////////////////////////////////////////////////////////////
-/*class RsEvents {
+class RsEvents {
   /// Register Event
   ///
   /// Where [eventType] is the enum type [RsEventType] that specifies what kind
   /// of event are we listening to.
   ///
   /// The callback return this StreamSubscription object and the Json response
-  /*static Future<StreamSubscription<Event>> registerEventsHandler(
+  static Future<StreamSubscription<Event>> registerEventsHandler(
       RsEventType eventType, Function callback, AuthToken authToken,
       {Function onError, String basicAuth}) async {
     await restartRSIfDown();
@@ -121,9 +121,9 @@ Future<bool> isRetroshareRunning() async {
 //    rsEventsSubscriptions ??= Map();
 //    rsEventsSubscriptions[eventType] = streamSubscription;
     return streamSubscription;
-  }*/
+  }
 }
-*/
+
 
 // ////////////////////////////////////////////////////////////////////////////
 // / RAW MESSAGE PASSING
@@ -250,6 +250,7 @@ class RsLoginHelper {
     };
     final mPath = "/rsLoginHelper/attemptLogin";
     final response = await rsApiCall(mPath, params: accountDetails);
+    print(response);
     return response['retval'];
   }
 
@@ -937,7 +938,7 @@ class RsMsgs {
     return response['retval'];
   }
 
-  static Future<dynamic> c(Chat chat, AuthToken authToken) async {
+  static Future<Map<dynamic,dynamic>> c(Chat chat, AuthToken authToken) async {
     var params = {
       'to_pid': chat.interlocutorId,
       'from_pid': chat.ownIdToUse,
@@ -971,7 +972,7 @@ class RsMsgs {
     for (var visible in chatLobbies['public_lobbies']) {
       VisibleChatLobbyRecord chat = VisibleChatLobbyRecord.fromJson(visible);
       /*await getLobbyAutoSubscribe(chat.lobbyId.xstr64, authToken) ?? true;*/
-        unsubscribedChatLobby.add(chat);
+      unsubscribedChatLobby.add(chat);
     }
     return unsubscribedChatLobby;
   }

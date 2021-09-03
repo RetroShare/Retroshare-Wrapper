@@ -43,6 +43,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.15.0"
+  eventsource:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: master
+      resolved-ref: d28e1330d078d41c0e1837b89a459b0ef65df67a
+      url: "https://gitlab.com/Kumaravinash9/retroshare-dart-see/"
+    source: git
+    version: "0.2.2"
   fake_async:
     dependency: transitive
     description:
@@ -74,6 +83,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.1.4"
+  logging:
+    dependency: transitive
+    description:
+      name: logging
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.11.4"
   matcher:
     dependency: transitive
     description:
@@ -135,6 +151,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.0"
+  sync:
+    dependency: transitive
+    description:
+      name: sync
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.0"
   term_glyph:
     dependency: transitive
     description:

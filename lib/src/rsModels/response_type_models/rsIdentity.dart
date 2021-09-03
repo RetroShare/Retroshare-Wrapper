@@ -1,4 +1,3 @@
-
 part of rsModels;
 
 class Identity {
@@ -9,7 +8,7 @@ class Identity {
   bool signed;
   bool isContact;
 
-  void set avatar(String avatar) {
+  set avatar(String avatar) {
     this._avatar = avatar;
   }
 
