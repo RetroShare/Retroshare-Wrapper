@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:path/path.dart';
 import 'package:retroshare_api_wrapper/retroshare.dart';
 import 'package:retroshare_api_wrapper/src/rsModels.dart';
+import 'package:tuple/tuple.dart';
 
 String _retroshareServicePrefix; // Used for remote control feature
 
@@ -78,6 +79,8 @@ Future<bool> isRetroshareRunning() async {
 // / RS EVENTS
 // ////////////////////////////////////////////////////////////////////////////
 class RsEvents {
+  static Map<RsEventType, StreamSubscription<Event>> rsEventsSubscriptions;
+
   /// Register Event
   ///
   /// Where [eventType] is the enum type [RsEventType] that specifies what kind
@@ -118,12 +121,11 @@ class RsEvents {
     }
 
     // Store the subscription on a dictionary
-//    rsEventsSubscriptions ??= Map();
-//    rsEventsSubscriptions[eventType] = streamSubscription;
+    rsEventsSubscriptions ??= Map();
+    rsEventsSubscriptions[eventType] = streamSubscription;
     return streamSubscription;
   }
 }
-
 
 // ////////////////////////////////////////////////////////////////////////////
 // / RAW MESSAGE PASSING
@@ -221,7 +223,7 @@ class RsAccounts {
       final mPath = '/rsAccounts/getCurrentAccountId';
       final response = await rsApiCall(mPath, authToken: authToken);
       if (response['retval']) return response['id'];
-      throw Exception("No Account Registered");
+      return null;
     } catch (err) {
       throw Exception("something went wrong!");
     }
@@ -938,7 +940,7 @@ class RsMsgs {
     return response['retval'];
   }
 
-  static Future<Map<dynamic,dynamic>> c(Chat chat, AuthToken authToken) async {
+  static Future<Map<dynamic, dynamic>> c(Chat chat, AuthToken authToken) async {
     var params = {
       'to_pid': chat.interlocutorId,
       'from_pid': chat.ownIdToUse,
@@ -1809,49 +1811,174 @@ class RsGxsCircles {
 // ----------------------------------------------------------------------------
 // UTILITIES
 // ----------------------------------------------------------------------------
-/*
-/// Used to wait until file hash event
-///
-/// Using the [RsEvents.registerEventsHandler] we wait until a
-/// [RsEventType.FILE_HASHING_COMPLETED] for the defined [filePath] is fired.
-///
-/// It return the file hash.
-Future<String> waitForFileHash(filePath, AuthToken authToken) async {
-  print('Start hashing file $filePath');
-  var resultHash = '';
-  // Use this to avoid a bug hashing the first file after RS restart that don't throw the event never
-  await RsFiles.forceDirectoryCheck();
-  // Repeat after 20 seconds to be sure
-  await RsFiles.forceDirectoryCheck(add_safe_delay: true);
-  var subscription = await RsEvents.registerEventsHandler(
-    RsEventType.FILE_HASHING_COMPLETED,
-    (StreamSubscription stream, Map<String, dynamic> event) {
-      print('Found Hashing event: $event');
-      if (event['mFilePath'] == filePath) {
-        resultHash = event['mFileHash'];
-        stream.cancel();
-        stream = null;
+
+/// Register event specifically for chat messages
+/// This function add code to deserialization of
+/// the message, automatizing the process.
+Future<StreamSubscription<Event>> eventsRegisterChatMessage(
+    {Function listenCb, Function onError, AuthToken authToken}) async {
+  return RsEvents.registerEventsHandler(
+    RsEventType.CHAT_MESSAGE,
+    (Event event) {
+      // Deserialize the message
+      final jsonData = event.data != null ? jsonDecode(event.data) : null;
+      ChatMessage chatMessage;
+      if (jsonData['event'] != null) {
+        chatMessage = ChatMessage.fromJson(jsonData['event']['mChatMessage']);
       }
+      if (listenCb != null) listenCb(json, chatMessage);
     },
     authToken,
+    onError: onError,
   );
-
-  // Used to wait until result hash is done
-  do {
-    print('Waiting for hash...');
-    await Future.delayed(Duration(milliseconds: 500));
-  } while (resultHash.isEmpty);
-
-  // This method to wait until stream close doesnt work...
-  // await Future.wait([subscription.asFuture()])
-  //     .whenComplete(() {
-  //   print("File hashed succesful");
-  // });
-
-  print('Resulting hash for $filePath is $resultHash');
-  return resultHash;
 }
-*/
+
+//IdentityUtils
+
+Future<List<Identity>> getOwnIdentities(AuthToken authToken) async {
+  final List<Identity> ownIdsList = [];
+
+  /// fetch the signed Identity
+  final List<dynamic> respSigned =
+      await RsIdentity.getOwnSignedIdentity(authToken);
+
+  respSigned
+    ..toSet().forEach((id) {
+      if (id != null && isNullCheck(id)) {
+        ownIdsList.add(Identity(id, true));
+      }
+    });
+
+  /// fetch the Unsigned Identity
+  final List<dynamic> respPseudonymous =
+      await RsIdentity.getOwnPseudonimousIds(authToken);
+
+  respPseudonymous
+    ..toSet().forEach((id) {
+      if (id != null && isNullCheck(id)) {
+        ownIdsList.add(Identity(id, false));
+      }
+    });
+
+  for (int x = 0; x < ownIdsList.length; x++) {
+    final resp = await getIdDetails(ownIdsList[x].mId, authToken);
+    if (resp.item1) ownIdsList[x] = resp.item2;
+  }
+
+  return ownIdsList;
+}
+
+Future<Tuple2<bool, Identity>> getIdDetails(
+    String id, AuthToken authToken) async {
+  final response = await RsIdentity.getIdDetails(id, authToken);
+
+  if (response['retval'] as bool) {
+    Identity identity = Identity(id);
+    //print(response);
+    identity.name = response['details']['mNickname'];
+    identity.avatar =
+        response['details']['mAvatar']['mData']['base64'] != null &&
+                response['details']['mAvatar']['mData']['base64']
+                    .toString()
+                    .isNotEmpty
+            ? response['details']['mAvatar']['mData']['base64'].toString()
+            : null;
+
+    if (response['details']['mPgpId'] != '0000000000000000') {
+      identity.signed = true;
+    } else {
+      identity.signed = false;
+    }
+
+    return Tuple2<bool, Identity>(true, identity);
+  }
+  return Tuple2<bool, Identity>(false, Identity(''));
+}
+
+// Identities that are not contacts do not have loaded avatars
+Future<Tuple3<List<Identity>, List<Identity>, List<Identity>>> getAllIdentities(
+    AuthToken authToken) async {
+  final response = await RsIdentity.getIdentitiesSummaries(authToken);
+  List<String> ids = [];
+  response.forEach((id) {
+    ids.add(id['mGroupId']);
+  });
+  final response2 = await RsIdentity.getIdentitiesInfo(ids, authToken);
+
+  List<Identity> notContactIds = [];
+  List<Identity> contactIds = [];
+  List<Identity> signedContactIds = [];
+  List<Identity> ownIds = [];
+  final idsInfo = response2;
+  for (var i = 0; i < idsInfo.length; i++) {
+    if (idsInfo[i]['mIsAContact'] == true &&
+        idsInfo[i]['mMeta']['mSubscribeFlags'] != 7) {
+      // get the  contact IDs and Unknown Ids
+      final Tuple2<Identity, bool> knownIden =
+          await getKnownIdentity(idsInfo[i], authToken);
+      if (knownIden.item2) {
+        signedContactIds.add(knownIden.item1);
+      }
+      contactIds.add(knownIden.item1);
+    } else if (idsInfo[i]['mMeta']['mSubscribeFlags'] == 7) {
+      // ownIdentity
+      ownIds.add(Identity(
+          idsInfo[i]['mMeta']['mGroupId'],
+          idsInfo[i]['mPgpId'] != '0000000000000000',
+          idsInfo[i]['mMeta']['mGroupName'],
+          ''));
+    } else {
+      // unknown Identity
+      notContactIds.add(
+        Identity(
+          idsInfo[i]['mMeta']['mGroupId'],
+          idsInfo[i]['mPgpId'] != '0000000000000000',
+          idsInfo[i]['mMeta']['mGroupName'],
+          '',
+        ),
+      );
+    }
+  }
+  // sort the unknown Identity by name
+  notContactIds.sort((id1, id2) {
+    return id1.name.compareTo(id2.name);
+  });
+  return Tuple3<List<Identity>, List<Identity>, List<Identity>>(
+    signedContactIds,
+    contactIds,
+    notContactIds,
+  );
+}
+
+Future<Tuple2<Identity, bool>> getKnownIdentity(
+  dynamic idsInfo,
+  AuthToken authToken,
+) async {
+  Identity identity;
+  bool success = true;
+  do {
+    final Tuple2<bool, Identity> tuple =
+        await getIdDetails(idsInfo['mMeta']['mGroupId'], authToken);
+    success = tuple.item1;
+    identity = tuple.item2;
+  } while (!success);
+
+  // This is because sometimes,
+  // the returning Id of [getIdDetails], that is a
+  // result of call 'torsIdentity/getIdDetails', return identity details, from the cache
+  // So sometimes the avatar are not updated, instead of in rsIdentity/getIdentitiesInfo, where they are
+  if (identity.avatar == '' && idsInfo['mImage']['mData']['base64'] != '') {
+    identity.avatar = idsInfo['mImage']['mData']['base64'];
+  }
+  identity.isContact = true;
+
+  //return the tuple
+  return Tuple2<Identity, bool>(identity, identity.signed);
+}
+
+bool isNullCheck(String s) {
+  return s != '00000000000000000000000000000000';
+}
 
 /// Used to know if a directory is in the list of getSharedDirectories
 Future<bool> isDirectoryAlreadyShared(String filePath) async {

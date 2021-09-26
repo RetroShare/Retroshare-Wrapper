@@ -11,14 +11,15 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^0.12.0+2
+  tuple: ^1.0.2
   
 
 
   # Library used to manage RsEvents streams
   eventsource:
-    git:
-      url: 'https://gitlab.com/Kumaravinash9/retroshare-dart-see/'
-      ref: master
+    git: 
+     url: 'https://github.com/selankon/dart-eventsource.git'
+     ref: elrepo.io
 
 dev_dependencies:
   flutter_test:
