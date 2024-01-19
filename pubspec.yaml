@@ -16,10 +16,7 @@ dependencies:
 
 
   # Library used to manage RsEvents streams
-  eventsource:
-    git: 
-     url: 'https://github.com/selankon/dart-eventsource.git'
-     ref: elrepo.io
+  eventsource: ^0.4.0
 
 dev_dependencies:
   flutter_test:
