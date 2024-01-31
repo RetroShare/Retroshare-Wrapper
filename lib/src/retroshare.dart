@@ -9,7 +9,7 @@ import 'package:retroshare_api_wrapper/retroshare.dart';
 import 'package:retroshare_api_wrapper/src/rsModels.dart';
 import 'package:tuple/tuple.dart';
 
-String _retroshareServicePrefix; // Used for remote control feature
+String? _retroshareServicePrefix; // Used for remote control feature
 
 const RETROSHARE_HOST = '127.0.0.1';
 const RETROSHARE_PORT = 9092;
@@ -79,7 +79,7 @@ Future<bool> isRetroshareRunning() async {
 // / RS EVENTS
 // ////////////////////////////////////////////////////////////////////////////
 class RsEvents {
-  static Map<RsEventType, StreamSubscription<Event>> rsEventsSubscriptions;
+  static Map<RsEventType, StreamSubscription<Event>>? rsEventsSubscriptions;
 
   /// Register Event
   ///
@@ -89,7 +89,7 @@ class RsEvents {
   /// The callback return this StreamSubscription object and the Json response
   static Future<StreamSubscription<Event>> registerEventsHandler(
       RsEventType eventType, Function callback, AuthToken authToken,
-      {Function onError, String basicAuth}) async {
+      {required Function onError,required String basicAuth}) async {
     await restartRSIfDown();
 
     var body = {'eventType': eventType.index};
@@ -174,8 +174,8 @@ void setStartCallback(callback) {
 /// be serializable to JSON.
 Future<Map<String, dynamic>> rsApiCall(
   String path, {
-  AuthToken authToken,
-  Map<String, dynamic> params,
+  required AuthToken authToken,
+  required Map<String, dynamic> params,
 }) async {
   try {
     final reqUrl = 'http://localhost:9092${path}';
@@ -326,7 +326,7 @@ class RsIdentity {
     }
   }
 
-  static Future<bool> isKnownId(String sslId, AuthToken authToken) async {
+  static Future<bool> isKnownId(required String sslId,required AuthToken authToken) async {
     try {
       final mPath = '/rsIdentity/isKnownId';
       final mParams = {'id': sslId};
@@ -1436,7 +1436,7 @@ class RsFiles {
   ///
   /// return false if something failed or already shared, true if shared
   static Future<bool> addSharedDirectory(String filename,
-      {String virtualname, int shareflags = 0x80}) async {
+      {required String virtualname, int shareflags = 0x80}) async {
     print('Adding shared directory: ');
 
     virtualname ??= basename(filename);
@@ -1470,7 +1470,7 @@ class RsFiles {
   ///	that is not a real pointer but an index used internally by RetroShare.
   /// @param[in] NOTSUPORTED flags file search flags RS_FILE_HINTS_*
   /// @return false if error occurred, true otherwise
-  static Future<DirDetails> requestDirDetails([int handle]) async {
+  static Future<DirDetails> requestDirDetails([int? handle]) async {
     Map response;
     if (handle == null) {
       response = await rsApiCall('/rsFiles/requestDirDetails');
@@ -1657,9 +1657,9 @@ class RsGxsCircles {
   static Future<String> createCircle(
     String circleName,
     RsGxsCircleType circleType, {
-    String restrictedId,
-    List<String> gxsIdMembers,
-    List<String> localMembers,
+    String? restrictedId,
+    List<String>? gxsIdMembers,
+    List<String>? localMembers,
   }) async {
     var response = await rsApiCall('/rsGxsCircles/createCircle', params: {
       'circleName': circleName,
@@ -1685,7 +1685,7 @@ class RsGxsCircles {
   /// [circleId] Id of the circle to which ask for inclusion
   /// return false if something failed, true otherwhise
   static Future<bool> requestCircleMembership(String id, String circleId,
-      [String ownGxsId]) async {
+      [String? ownGxsId]) async {
     if (!(circleId is String) || circleId.isEmpty) {
       throw Exception('Invalid circle ID');
     }
@@ -1780,7 +1780,7 @@ class RsGxsCircles {
   /// [circleId] Id of the circle to leave
   /// return false if something failed, true otherwhise
   static Future<bool> cancelCircleMembership(String id, String circleId,
-      [String ownGxsId]) async {
+      [String? ownGxsId]) async {
     final response = await rsApiCall('/rsGxsCircles/cancelCircleMembership',
         params: {'ownGxsId': ownGxsId ?? id, 'circleId': circleId});
     if (!(response is Map)) {
@@ -1816,7 +1816,7 @@ class RsGxsCircles {
 /// This function add code to deserialization of
 /// the message, automatizing the process.
 Future<StreamSubscription<Event>> eventsRegisterChatMessage(
-    {Function listenCb, Function onError, AuthToken authToken}) async {
+    {Function? listenCb, Function? onError, AuthToken? authToken}) async {
   return RsEvents.registerEventsHandler(
     RsEventType.CHAT_MESSAGE,
     (Event event) {
