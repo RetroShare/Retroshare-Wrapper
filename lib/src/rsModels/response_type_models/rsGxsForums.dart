@@ -57,19 +57,19 @@ class RsMsgMetaData {
   Map<String, dynamic> rawJson;
 
   RsMsgMetaData(
-      {this.mGroupId,
-      this.mMsgId,
-      this.mThreadId,
-      this.mParentId,
-      this.mOrigMsgId,
-      this.mAuthorId,
-      this.mMsgName,
-      this.mPublishTs,
-      this.mMsgFlags,
-      this.mMsgStatus,
-      this.mChildTs,
-      this.mServiceString,
-      this.rawJson});
+      {required this.mGroupId,
+      required this.mMsgId,
+      required this.mThreadId,
+      required this.mParentId,
+      required this.mOrigMsgId,
+      required this.mAuthorId,
+      required this.mMsgName,
+      required this.mPublishTs,
+      required this.mMsgFlags,
+      required this.mMsgStatus,
+      required this.mChildTs,
+      required this.mServiceString,
+      required this.rawJson});
 
   RsMsgMetaData.fromJson(Map<String, dynamic> jsonString)
       : this(
