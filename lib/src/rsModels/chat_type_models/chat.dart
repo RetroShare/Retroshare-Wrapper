@@ -13,21 +13,21 @@ class Chat {
   int unreadCount;
 
   Chat(
-      {this.chatId,
-      this.chatName,
-      this.lobbyTopic,
-      this.ownIdToUse,
-      this.interlocutorId,
-      this.isPublic,
-      this.numberOfParticipants,
-      this.lobbyFlags,
-      this.autoSubscribe,
+      {required this.chatId,
+      required this.chatName,
+      required this.lobbyTopic,
+      required this.ownIdToUse,
+      required this.interlocutorId,
+      required this.isPublic,
+      required this.numberOfParticipants,
+      required this.lobbyFlags,
+      required this.autoSubscribe,
       this.unreadCount = 0});
 
   /// Distant Chat list
   /// Where:
   /// Map<To, Map<from, distantChatId>>
-  static Map<String, Map<String, String>> _chatToFromMap;
+  static Map<String, Map<String, String>>? _chatToFromMap;
 
   static String getDistantChatId(String to, String from) {
     if (distantChatExists(to, from)) return _chatToFromMap[to][from];
