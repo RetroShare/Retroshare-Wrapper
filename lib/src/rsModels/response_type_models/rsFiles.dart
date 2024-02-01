@@ -27,20 +27,20 @@ class DirDetails {
   int max_mtime;
 
   DirDetails({
-    this.parent_groups,
-    this.children,
-    this.handle,
-    this.parentHandle,
-    this.prow,
-    this.type,
-    this.id,
-    this.name,
-    this.hash,
-    this.path,
-    this.size,
-    this.mtime,
-    this.flags,
-    this.max_mtime,
+    required this.parent_groups,
+    required this.children,
+    required this.handle,
+    required this.parentHandle,
+    required this.prow,
+    required this.type,
+    required this.id,
+    required this.name,
+    required this.hash,
+    required this.path,
+    required this.size,
+    required this.mtime,
+    required this.flags,
+    required this.max_mtime,
   });
 
   DirDetails.fromJson(Map<String, dynamic> jsonString)
