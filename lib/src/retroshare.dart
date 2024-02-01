@@ -326,7 +326,7 @@ class RsIdentity {
     }
   }
 
-  static Future<bool> isKnownId(required String sslId,required AuthToken authToken) async {
+  static Future<bool> isKnownId(String? sslId,AuthToken? authToken) async {
     try {
       final mPath = '/rsIdentity/isKnownId';
       final mParams = {'id': sslId};
@@ -526,7 +526,7 @@ class RsPeers {
   /// @return false if error occurred, true otherwise
   /// @param[out] invite storage for the generated invite
   static Future<String> getShortInvite(AuthToken authToken,
-      {String sslId, String baseUrl}) async {
+      {String? sslId, String? baseUrl}) async {
     var mParams = {
       'sslId': sslId,
     };
