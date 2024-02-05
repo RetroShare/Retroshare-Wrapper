@@ -95,7 +95,7 @@ class RsEvents {
     var body = {'eventType': eventType.index};
     var path = '/rsEvents/registerEventsHandler';
     var reqUrl = getRetroshareServicePrefix() + path;
-    StreamSubscription<Event> streamSubscription;
+    StreamSubscription<Event>? streamSubscription;
     try {
       var eventSource = await EventSource.connect(
         reqUrl,
@@ -122,7 +122,7 @@ class RsEvents {
 
     // Store the subscription on a dictionary
     rsEventsSubscriptions ??= Map();
-    rsEventsSubscriptions[eventType] = streamSubscription;
+    rsEventsSubscriptions?.[eventType] = streamSubscription;
     return streamSubscription;
   }
 }
@@ -175,7 +175,7 @@ void setStartCallback(callback) {
 Future<Map<String, dynamic>> rsApiCall(
   String path, {
   required AuthToken authToken,
-  required Map<String, dynamic> params,
+  Map<String, dynamic>? params,
 }) async {
   try {
     final reqUrl = 'http://localhost:9092${path}';
