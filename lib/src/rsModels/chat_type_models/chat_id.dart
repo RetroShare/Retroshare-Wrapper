@@ -1,16 +1,16 @@
 part of rsModels;
 
 class ChatId {
-  String broadcastStatusPeerId;
+  String? broadcastStatusPeerId;
 
-  ChatIdType type;
+  ChatIdType? type;
   //enum typeEnum {  0,  1,  2,  3,  4,  };{
 
-  String peerId;
+  String? peerId;
 
-  String distantChatId;
+  String? distantChatId;
 
-  ChatLobbyId lobbyId;
+  ChatLobbyId? lobbyId;
   ChatId();
 
   @override
