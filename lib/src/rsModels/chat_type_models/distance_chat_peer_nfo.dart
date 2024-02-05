@@ -1,15 +1,15 @@
 part of rsModels;
 
 class DistantChatPeerInfo {
-  String toId;
+  String? toId;
 
-  String ownId;
+  String? ownId;
 
-  String peerId;
+  String? peerId;
 
-  int status;
+  int? status;
 
-  int pendingItems;
+  int? pendingItems;
   DistantChatPeerInfo();
 
   @override
