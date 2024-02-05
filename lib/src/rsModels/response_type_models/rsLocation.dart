@@ -9,10 +9,10 @@ class Location {
   bool isOnline;
 
   Location([
-    this.rsPeerId,
-    this.rsGpgId,
-    this.accountName,
-    this.locationName,
-    this.isOnline = false,
+    required this.rsPeerId,
+    required this.rsGpgId,
+    required this.accountName,
+    required this.locationName,
+    required this.isOnline = false,
   ]);
 }
