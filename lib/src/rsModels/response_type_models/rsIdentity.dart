@@ -2,8 +2,8 @@ part of rsModels;
 
 class Identity {
   String mId; //  RsGxsId
-  String pgpId; //RspgpID
-  String name;
+  String? pgpId; //RspgpID
+  String? name;
   String? _avatar;
   bool signed;
   bool isContact;
@@ -12,10 +12,10 @@ class Identity {
     this._avatar = avatar;
   }
 
-  String get avatar => this._avatar;
+  String? get avatar => this._avatar;
 
   Identity(String this.mId,
-      [this.signed=true, name, avatar, this.isContact = false,String? this.pgpId='']) {
+      [this.signed=true, name, avatar, this.isContact = false,String? this.pgpId]) {
     this.name = name ?? mId;
     this._avatar = avatar;
   }
