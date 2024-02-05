@@ -89,7 +89,7 @@ class RsEvents {
   /// The callback return this StreamSubscription object and the Json response
   static Future<StreamSubscription<Event>> registerEventsHandler(
       RsEventType eventType, Function callback, AuthToken authToken,
-      {required Function onError,required String basicAuth}) async {
+      {required Function onError,String? basicAuth}) async {
     await restartRSIfDown();
 
     var body = {'eventType': eventType.index};
@@ -122,7 +122,11 @@ class RsEvents {
 
     // Store the subscription on a dictionary
     rsEventsSubscriptions ??= Map();
-    rsEventsSubscriptions?.[eventType] = streamSubscription;
+    if (rsEventsSubscriptions != null) {
+      rsEventsSubscriptions![eventType] = streamSubscription;
+    } else {
+      // Handle the case where rsEventsSubscriptions is null
+    }
     return streamSubscription;
   }
 }
