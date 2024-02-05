@@ -8,11 +8,11 @@ class Location {
   String locationName;
   bool isOnline;
 
-  Location([
+  Location(
     required this.rsPeerId,
     required this.rsGpgId,
     required this.accountName,
     required this.locationName,
     required this.isOnline = false,
-  ]);
+  );
 }
