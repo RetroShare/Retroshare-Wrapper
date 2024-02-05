@@ -174,7 +174,7 @@ void setStartCallback(callback) {
 /// be serializable to JSON.
 Future<Map<String, dynamic>> rsApiCall(
   String path, {
-  required AuthToken authToken,
+  AuthToken? authToken,
   Map<String, dynamic>? params,
 }) async {
   try {
@@ -218,7 +218,7 @@ Future<Map<String, dynamic>> rsApiCall(
 // ////////////////////////////////////////////////////////////////////////////
 
 class RsAccounts {
-  static Future<String> getCurrentAccountId(AuthToken authToken) async {
+  static Future<String?> getCurrentAccountId(AuthToken authToken) async {
     try {
       final mPath = '/rsAccounts/getCurrentAccountId';
       final response = await rsApiCall(mPath, authToken: authToken);
