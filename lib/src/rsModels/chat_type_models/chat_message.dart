@@ -1,16 +1,16 @@
 part of rsModels;
 
 class ChatMessage {
-  ChatId chat_id;
-  String broadcast_peer_id;
-  String lobby_peer_gxs_id;
-  String peer_alternate_nickname;
-  int chatflags;
-  int sendTime;
-  int recvTime;
-  String msg;
-  bool incoming;
-  bool online;
+  ChatId? chat_id;
+  String? broadcast_peer_id;
+  String? lobby_peer_gxs_id;
+  String? peer_alternate_nickname;
+  int? chatflags;
+  int? sendTime;
+  int? recvTime;
+  String? msg;
+  bool? incoming;
+  bool? online;
 
   ChatMessage();
 
