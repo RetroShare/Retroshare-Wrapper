@@ -7,6 +7,7 @@ class DistantChatPeerInfo {
 
   String? peerId;
 
+  
   int? status;
 
   int? pendingItems;
