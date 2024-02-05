@@ -15,7 +15,7 @@ class Identity {
   String get avatar => this._avatar;
 
   Identity(String this.mId,
-      bool? this.signed, name, avatar, this.isContact = false,String? this.pgpId) {
+      [this.signed=true, name, avatar, this.isContact = false,String? this.pgpId='']) {
     this.name = name ?? mId;
     this._avatar = avatar;
   }
