@@ -2,15 +2,15 @@
 part of rsModels;
 
 class ReqCreateChatLobby {
-   String lobbyName;
+   String? lobbyName;
 
-   String lobbyIdentity;
+   String? lobbyIdentity;
 
-   String lobbyTopic;
+   String? lobbyTopic;
 
   List<String> invitedFriends = [];
 
-   int lobbyPrivacyType;
+   int? lobbyPrivacyType;
   ReqCreateChatLobby();
 
   @override
