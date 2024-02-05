@@ -87,8 +87,8 @@ class RsEvents {
   /// of event are we listening to.
   ///
   /// The callback return this StreamSubscription object and the Json response
-  static Future<StreamSubscription<Event>> registerEventsHandler(
-      RsEventType eventType, Function callback, AuthToken authToken,
+  static Future<StreamSubscription<Event>?> registerEventsHandler(
+      RsEventType eventType, Function callback, AuthToken? authToken,
       {required Function onError,String? basicAuth}) async {
     await restartRSIfDown();
 
@@ -109,7 +109,7 @@ class RsEvents {
 
       streamSubscription = eventSource.listen((Event event) {
         // Deserialize the message
-        var json = event.data != null ? jsonDecode(event.data) : null;
+        var json = event.data != null ? jsonDecode(event.data!) : null;
         if (json['event'] != null && callback != null) {
           callback(streamSubscription, json['event']);
         }
@@ -426,7 +426,7 @@ class RsIdentity {
     }
   }
 
-  static Future<bool> addFriend(
+  static Future<bool?> addFriend(
       String sslId, String gpgId, AuthToken authToken) async {
     try {
       final mPath = '/rsPeers/addFriend';
@@ -813,7 +813,7 @@ class RsMsgs {
     return response['msgList'].cast<Map<String, dynamic>>().toList() ?? [];
   }
 
-  static Future<Map<String, dynamic>> getMessage(String msgId) async {
+  static Future<Map<String, dynamic>?> getMessage(String msgId) async {
     if (!(msgId is String) || msgId.isEmpty) {
       throw Exception('Invalid msgId');
     }
@@ -1512,7 +1512,7 @@ class RsFiles {
   ///
   /// [hash] SHA1 file identifier
   /// Return info storage for the possibly found file information
-  static Future<Map> alreadyHaveFile(String hash) async {
+static Future<Map>? alreadyHaveFile(String hash) async {
     final response =
         await rsApiCall('/rsFiles/alreadyHaveFile', params: {'hash': hash});
     if (response['retval'] != true) {
@@ -1825,8 +1825,8 @@ Future<StreamSubscription<Event>> eventsRegisterChatMessage(
     RsEventType.CHAT_MESSAGE,
     (Event event) {
       // Deserialize the message
-      final jsonData = event.data != null ? jsonDecode(event.data) : null;
-      ChatMessage chatMessage;
+      final jsonData = event.data != null ? jsonDecode(event.data!) : null;
+      ChatMessage? chatMessage;
       if (jsonData['event'] != null) {
         chatMessage = ChatMessage.fromJson(jsonData['event']['mChatMessage']);
       }
@@ -1997,7 +1997,7 @@ Future<bool> isDirectoryAlreadyShared(String filePath) async {
 
 /// Search recursivelly on the RS directory tree until find a specified path or
 /// file returning it information
-Future<DirDetails> findAFileOnDiretoryTree(String filePath,
+Future<DirDetails>? findAFileOnDiretoryTree(String filePath,
     [int handle = 0]) async {
   var directory = await RsFiles.requestDirDetails(handle);
   if (directory.children.isNotEmpty) {
