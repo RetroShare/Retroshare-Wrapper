@@ -4,7 +4,7 @@ class Identity {
   String mId; //  RsGxsId
   String pgpId; //RspgpID
   String name;
-  String _avatar;
+  String? _avatar;
   bool signed;
   bool isContact;
 
