@@ -1,9 +1,9 @@
 part of rsModels;
 
 class ChatLobbyId {
-  num xint64;
+  num? xint64;
 
-  String xstr64;
+  String? xstr64;
   ChatLobbyId();
 
   @override
