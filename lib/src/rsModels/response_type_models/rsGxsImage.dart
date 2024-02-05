@@ -2,16 +2,16 @@
 part of rsModels;
 
 class RsGxsImage {
-   int mSize;
-    Uint8List mData;
-    String base64String;
+   int? mSize;
+    Uint8List? mData;
+    String? base64String;
 
   RsGxsImage(this.mData) {
     mSize = mData.length;
     base64String = base64.encode(mData);
   }
 
-  RsGxsImage.fromJson(Map<String, dynamic> json) {
+  RsGxsImage.fromJson(Map<String, dynamic>? json) {
     mSize = json['mSize'];
     base64String = json['mData']['base64'];
   }
