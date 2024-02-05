@@ -1,19 +1,19 @@
 part of rsModels;
 
 class VisibleChatLobbyRecord {
-  ChatLobbyId lobbyId;
+  ChatLobbyId? lobbyId;
 
-  String lobbyName;
+  String? lobbyName;
 
-  String lobbyTopic;
+  String? lobbyTopic;
 
   List<String> participatingFriends = [];
 
-  int totalNumberOfPeers;
+  int? totalNumberOfPeers;
 
-  RstimeT lastReportTime;
+  RstimeT? lastReportTime;
 
-  int lobbyFlags;
+  int? lobbyFlags;
   VisibleChatLobbyRecord();
 
   @override
