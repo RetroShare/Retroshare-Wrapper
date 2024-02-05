@@ -152,7 +152,7 @@ String statusCodeErrorMessages(int statusCode, String path, String reqUrl) {
 /// If the API error is not handled, throw this exception. Check
 /// [statusCodeErrorMessages] to see handled exceptions.
 class ApiUnhandledErrorException implements Exception {
-  String _message;
+  String? _message;
   ApiUnhandledErrorException(int statusCode, String reqUrl) {
     _message = 'Unhandled statusCode: ' + statusCode.toString() + ' ' + reqUrl;
   }
