@@ -157,7 +157,9 @@ class ApiUnhandledErrorException implements Exception {
     _message = 'Unhandled statusCode: ' + statusCode.toString() + ' ' + reqUrl;
   }
   @override
-  String toString() => _message;
+  String toString() {
+    return _message ?? ''; // Return empty string if null
+  }
 }
 
 class LoginException implements Exception {
@@ -914,7 +916,7 @@ class RsMsgs {
       id.distantChatId = chatId;
     } else if (type == ChatIdType.number3_) {
       id.lobbyId = ChatLobbyId();
-      id.lobbyId.xstr64 = chatId;
+      id.lobbyId?.xstr64 = chatId;
     } else {
       throw ('Chat type not supported');
     }
