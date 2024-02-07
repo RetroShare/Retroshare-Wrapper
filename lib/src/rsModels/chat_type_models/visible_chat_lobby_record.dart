@@ -28,9 +28,9 @@ class VisibleChatLobbyRecord {
         : ChatLobbyId.fromJson(json['lobby_id']);
     lobbyName = json['lobby_name'];
     lobbyTopic = json['lobby_topic'];
-    participatingFriends = (json['participating_friends'] == null)
+    participatingFriends = ((json['participating_friends'] == null)
         ? null
-        : (json['participating_friends'] as List).cast<String>();
+        : (json['participating_friends'] as List).cast<String>())!;
     totalNumberOfPeers = json['total_number_of_peers'];
     lastReportTime = (json['last_report_time'] == null)
         ? null

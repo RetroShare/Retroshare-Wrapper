@@ -1,7 +1,7 @@
 part of rsModels;
 
 class ReqRequestIdentity {
-  String id;
+  String? id;
 
   List<String> peers = [];
   ReqRequestIdentity();

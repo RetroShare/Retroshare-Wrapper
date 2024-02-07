@@ -7,13 +7,13 @@ class RsGxsImage {
     String? base64String;
 
   RsGxsImage(this.mData) {
-    mSize = mData.length;
-    base64String = base64.encode(mData);
+    mSize = mData?.length;
+    base64String = base64.encode(mData as List<int>);
   }
 
   RsGxsImage.fromJson(Map<String, dynamic>? json) {
-    mSize = json['mSize'];
-    base64String = json['mData']['base64'];
+    mSize = json?['mSize'];
+    base64String = json?['mData']['base64'];
   }
 
   Map<String, dynamic> toJson() => {

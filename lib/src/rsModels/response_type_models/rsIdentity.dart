@@ -8,7 +8,7 @@ class Identity {
   bool signed;
   bool isContact;
 
-  set avatar(String avatar) {
+  set avatar(String? avatar) {
     this._avatar = avatar;
   }
 

@@ -89,7 +89,7 @@ class RsEvents {
   /// The callback return this StreamSubscription object and the Json response
   static Future<StreamSubscription<Event>?> registerEventsHandler(
       RsEventType eventType, Function callback, AuthToken? authToken,
-      {required Function onError,String? basicAuth}) async {
+      {required Function? onError,String? basicAuth}) async {
     await restartRSIfDown();
 
     var body = {'eventType': eventType.index};
@@ -1514,7 +1514,7 @@ class RsFiles {
   ///
   /// [hash] SHA1 file identifier
   /// Return info storage for the possibly found file information
-static Future<Map>? alreadyHaveFile(String hash) async {
+static Future<Map?>? alreadyHaveFile(String hash) async {
     final response =
         await rsApiCall('/rsFiles/alreadyHaveFile', params: {'hash': hash});
     if (response['retval'] != true) {
@@ -1821,7 +1821,7 @@ class RsGxsCircles {
 /// Register event specifically for chat messages
 /// This function add code to deserialization of
 /// the message, automatizing the process.
-Future<StreamSubscription<Event>> eventsRegisterChatMessage(
+Future<Future<StreamSubscription<Event>?>> eventsRegisterChatMessage(
     {Function? listenCb, Function? onError, AuthToken? authToken}) async {
   return RsEvents.registerEventsHandler(
     RsEventType.CHAT_MESSAGE,
@@ -1883,12 +1883,12 @@ Future<Tuple2<bool, Identity>> getIdDetails(
     //print(response);
     identity.name = response['details']['mNickname'];
     identity.avatar =
-        response['details']['mAvatar']['mData']['base64'] != null &&
+        (response['details']['mAvatar']['mData']['base64'] != null &&
                 response['details']['mAvatar']['mData']['base64']
                     .toString()
                     .isNotEmpty
             ? response['details']['mAvatar']['mData']['base64'].toString()
-            : null;
+            : null)!;
 
     if (response['details']['mPgpId'] != '0000000000000000') {
       identity.signed = true;
@@ -1947,8 +1947,17 @@ Future<Tuple3<List<Identity>, List<Identity>, List<Identity>>> getAllIdentities(
   }
   // sort the unknown Identity by name
   notContactIds.sort((id1, id2) {
-    return id1.name.compareTo(id2.name);
+    final name1 = id1.name;
+    final name2 = id2.name;
+
+    if (name1 != null && name2 != null) {
+      return name1.compareTo(name2);
+    } else {
+      return name1 == null ? -1 : (name2 == null ? 1 : 0); // Handle nulls explicitly
+    }
   });
+
+
   return Tuple3<List<Identity>, List<Identity>, List<Identity>>(
     signedContactIds,
     contactIds,
@@ -1999,7 +2008,7 @@ Future<bool> isDirectoryAlreadyShared(String filePath) async {
 
 /// Search recursivelly on the RS directory tree until find a specified path or
 /// file returning it information
-Future<DirDetails>? findAFileOnDiretoryTree(String filePath,
+Future<DirDetails?>? findAFileOnDiretoryTree(String filePath,
     [int handle = 0]) async {
   var directory = await RsFiles.requestDirDetails(handle);
   if (directory.children.isNotEmpty) {

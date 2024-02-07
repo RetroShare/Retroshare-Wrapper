@@ -1,15 +1,15 @@
 part of rsModels;
 
 class Chat {
-  String chatId;
-  String chatName;
+  String? chatId;
+  String? chatName;
   String ownIdToUse;
   String interlocutorId;
-  String lobbyTopic;
+  String? lobbyTopic;
   bool isPublic;
-  int numberOfParticipants;
-  int lobbyFlags;
-  bool autoSubscribe;
+  int? numberOfParticipants;
+  int? lobbyFlags;
+  bool? autoSubscribe;
   int unreadCount;
 
   Chat(
@@ -29,8 +29,8 @@ class Chat {
   /// Map<To, Map<from, distantChatId>>
   static Map<String, Map<String, String>>? _chatToFromMap;
 
-  static String getDistantChatId(String to, String from) {
-    if (distantChatExists(to, from)) return _chatToFromMap[to][from];
+  static String? getDistantChatId(String to, String from) {
+    if (distantChatExists(to, from)) return _chatToFromMap![to]?[from];
     return '';
   }
 
@@ -38,8 +38,8 @@ class Chat {
   // Should be a better way to write this... :
   static bool distantChatExists(String to, String from) {
     if ((_chatToFromMap?.isEmpty ?? true) ||
-        (_chatToFromMap[to]?.isEmpty ?? true) ||
-        (_chatToFromMap[to][from]?.isEmpty ?? true)) return false;
+        (_chatToFromMap?[to]?.isEmpty ?? true) ||
+        (_chatToFromMap![to]?[from]?.isEmpty ?? true)) return false;
     return true;
   }
 
@@ -48,8 +48,8 @@ class Chat {
       // If distant chat doesn't exist
       // Should be a better way to do that
       _chatToFromMap ??= {};
-      _chatToFromMap[to] ??= {};
-      _chatToFromMap[to][from] = distantId;
+      _chatToFromMap?[to] ??= {};
+      _chatToFromMap![to]?[from] = distantId;
     }
   }
 
@@ -66,11 +66,11 @@ class Chat {
   static Chat fromVisibleChatLobbyRecord(
       VisibleChatLobbyRecord chatLobbyRecord) {
     return Chat(
-      chatId: chatLobbyRecord.lobbyId.xstr64,
+      chatId: chatLobbyRecord.lobbyId?.xstr64,
       isPublic: chatLobbyRecord.lobbyFlags == 1 ? true : false,
       lobbyTopic: chatLobbyRecord.lobbyTopic,
       chatName: chatLobbyRecord.lobbyName,
-      numberOfParticipants: chatLobbyRecord.totalNumberOfPeers,
+      numberOfParticipants: chatLobbyRecord.totalNumberOfPeers, ownIdToUse: '', interlocutorId: '', lobbyFlags: null, autoSubscribe: null,
     );
   }
 
@@ -81,5 +81,5 @@ class Chat {
   /// Private + signed = 16
   static bool isPublicChat(int lobbyFlags) =>
       lobbyFlags == 4 || lobbyFlags == 20 ? true : false;
-  bool imPublicChat() => Chat.isPublicChat(lobbyFlags);
+  bool imPublicChat() => Chat.isPublicChat(lobbyFlags!);
 }

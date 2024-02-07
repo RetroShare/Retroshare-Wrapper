@@ -29,5 +29,5 @@ class ChatMessage {
     online = json['online'];
   }
 
-  bool isLobbyMessage() => chat_id.lobbyId.xstr64 != '0';
+  bool isLobbyMessage() => chat_id?.lobbyId?.xstr64 != '0';
 }
