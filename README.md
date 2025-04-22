@@ -26,7 +26,7 @@ Add the package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  retroshare_api_wrapper: ^0.0.2 # Or the latest version
+  retroshare_api_wrapper: ^0.1.0 # Or the latest version
 ```
 
 Or install using the command line:
@@ -189,7 +189,3 @@ This will execute the tests defined in the `test/` directory.
 ## Contributing
 
 Contributions are welcome! Please feel free to submit pull requests or open issues.
-
-## License
-
-This package is distributed under the MIT License. See the `LICENSE` file for details.
