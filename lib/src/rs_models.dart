@@ -1,0 +1,20 @@
+library rs_models;
+
+export 'rsModels/auth.dart';
+export 'rsModels/chat_type_models/chat.dart';
+export 'rsModels/chat_type_models/chat_id.dart';
+export 'rsModels/chat_type_models/chat_lobby_id.dart';
+export 'rsModels/chat_type_models/chat_message.dart';
+export 'rsModels/chat_type_models/distance_chat_peer_nfo.dart';
+export 'rsModels/chat_type_models/visible_chat_lobby_record.dart';
+export 'rsModels/common.dart';
+export 'rsModels/request_type_models/req_create_chat_lobby.dart';
+export 'rsModels/response_type_models/rs_accounts.dart';
+export 'rsModels/response_type_models/rs_events.dart';
+export 'rsModels/response_type_models/rs_files.dart';
+export 'rsModels/response_type_models/rs_gxs_circles.dart';
+export 'rsModels/response_type_models/rs_gxs_forums.dart';
+export 'rsModels/response_type_models/rs_gxs_image.dart';
+export 'rsModels/response_type_models/rs_identity.dart';
+export 'rsModels/response_type_models/rs_location.dart';
+export 'rsModels/response_type_models/rs_time.dart';

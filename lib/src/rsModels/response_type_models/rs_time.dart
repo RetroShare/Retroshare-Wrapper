@@ -1,26 +1,15 @@
-part of rsModels;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class RstimeT {
-  num? xint64;
+part 'rs_time.freezed.dart';
+part 'rs_time.g.dart';
 
-  String? xstr64;
-  RstimeT();
+@freezed
+class RstimeT with _$RstimeT {
+  const factory RstimeT({
+    num? xint64,
+    String? xstr64,
+  }) = _RstimeT;
 
-  @override
-  String toString() {
-    return 'RstimeT[xint64=$xint64, xstr64=$xstr64, ]';
-  }
-
-  RstimeT.fromJson(Map<String, dynamic> json) {
-    if (json == null) return;
-    xint64 = json['xint64'];
-    xstr64 = json['xstr64'];
-  }
-
-  Map<String, dynamic> toJson() {
-    var json = <String, dynamic>{};
-    if (xint64 != null) json['xint64'] = xint64;
-    if (xstr64 != null) json['xstr64'] = xstr64;
-    return json;
-  }
+  factory RstimeT.fromJson(Map<String, dynamic> json) =>
+      _$RstimeTFromJson(json);
 }

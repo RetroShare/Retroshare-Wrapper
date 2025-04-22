@@ -1,26 +1,15 @@
-part of rsModels;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class ChatLobbyId {
-  num? xint64;
+part 'chat_lobby_id.freezed.dart';
+part 'chat_lobby_id.g.dart';
 
-  String? xstr64;
-  ChatLobbyId();
+@freezed
+class ChatLobbyId with _$ChatLobbyId {
+  const factory ChatLobbyId({
+    num? xint64,
+    String? xstr64,
+  }) = _ChatLobbyId;
 
-  @override
-  String toString() {
-    return 'ChatLobbyId[xint64=$xint64, xstr64=$xstr64, ]';
-  }
-
-  ChatLobbyId.fromJson(Map<String, dynamic> json) {
-    if (json == null) return;
-    xint64 = json['xint64'];
-    xstr64 = json['xstr64'];
-  }
-
-  Map<String, dynamic> toJson() {
-    var json = <String, dynamic>{};
-    if (xint64 != null) json['xint64'] = xint64;
-    if (xstr64 != null) json['xstr64'] = xstr64;
-    return json;
-  }
+  factory ChatLobbyId.fromJson(Map<String, dynamic> json) =>
+      _$ChatLobbyIdFromJson(json);
 }

@@ -1,19 +1,8 @@
-
-
 // Return yyyy-mm-dd at hh:mm
-import 'dart:math';
 
 String getFormatedTime(int time) {
-  var date = getTimeSinceEpoch(time);
-  return date.year.toString() +
-      '-' +
-      date.month.toString().padLeft(2, '0') +
-      '-' +
-      date.day.toString().padLeft(2, '0') +
-      ' at ' +
-      date.hour.toString().padLeft(2, '0') +
-      ':' +
-      date.minute.toString().padLeft(2, '0');
+  final date = getTimeSinceEpoch(time);
+  return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} at ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
 }
 
 DateTime getTimeSinceEpoch(int time) =>
