@@ -1,33 +1,30 @@
-part of rsModels;
+// ignore_for_file: invalid_annotation_target
 
-class ChatMessage {
-  ChatId? chat_id;
-  String? broadcast_peer_id;
-  String? lobby_peer_gxs_id;
-  String? peer_alternate_nickname;
-  int? chatflags;
-  int? sendTime;
-  int? recvTime;
-  String? msg;
-  bool? incoming;
-  bool? online;
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:retroshare_api_wrapper/src/rsModels/chat_type_models/chat_id.dart';
 
-  ChatMessage();
+part 'chat_message.freezed.dart';
+part 'chat_message.g.dart';
 
-  ChatMessage.fromJson(Map<String, dynamic> json) {
-    if (json == null) return;
-    chat_id =
-        (json['chat_id'] == null) ? null : ChatId.fromJson(json['chat_id']);
-    broadcast_peer_id = json['broadcast_peer_id'];
-    lobby_peer_gxs_id = json['lobby_peer_gxs_id'];
-    peer_alternate_nickname = json['peer_alternate_nickname'];
-    chatflags = json['chatflags'];
-    sendTime = json['sendTime'];
-    recvTime = json['recvTime'];
-    msg = json['msg'];
-    incoming = json['incoming'];
-    online = json['online'];
-  }
+@freezed
+class ChatMessage with _$ChatMessage {
+  const factory ChatMessage({
+    @JsonKey(name: 'chat_id') ChatId? chatId,
+    @JsonKey(name: 'broadcast_peer_id') String? broadcastPeerId,
+    @JsonKey(name: 'lobby_peer_gxs_id') String? lobbyPeerGxsId,
+    @JsonKey(name: 'peer_alternate_nickname') String? peerAlternateNickname,
+    int? chatflags,
+    int? sendTime,
+    int? recvTime,
+    String? msg,
+    bool? incoming,
+    bool? online,
+  }) = _ChatMessage;
+  const ChatMessage._();
 
-  bool isLobbyMessage() => chat_id?.lobbyId?.xstr64 != '0';
+  factory ChatMessage.fromJson(Map<String, dynamic> json) =>
+      _$ChatMessageFromJson(json);
+
+  /// Custom method (like the original `isLobbyMessage`)
+  bool isLobbyMessage() => chatId?.lobbyId?.xstr64 != '0';
 }

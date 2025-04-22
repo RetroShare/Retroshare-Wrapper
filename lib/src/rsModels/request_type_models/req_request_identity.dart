@@ -1,26 +1,15 @@
-part of rsModels;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class ReqRequestIdentity {
-  String? id;
+part 'req_request_identity.freezed.dart';
+part 'req_request_identity.g.dart';
 
-  List<String> peers = [];
-  ReqRequestIdentity();
+@freezed
+class ReqRequestIdentity with _$ReqRequestIdentity {
+  const factory ReqRequestIdentity({
+    String? id,
+    @Default([]) List<String> peers,
+  }) = _ReqRequestIdentity;
 
-  @override
-  String toString() {
-    return 'ReqRequestIdentity[id=$id, peers=$peers, ]';
-  }
-
-  ReqRequestIdentity.fromJson(Map<String, dynamic> json) {
-    if (json == null) return;
-    id = json['id'];
-    peers = (json['peers'] == null) ? null : (json['peers']).cast<String>();
-  }
-
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> json = {};
-    if (id != null) json['id'] = id;
-    if (peers != null) json['peers'] = peers;
-    return json;
-  }
+  factory ReqRequestIdentity.fromJson(Map<String, dynamic> json) =>
+      _$ReqRequestIdentityFromJson(json);
 }

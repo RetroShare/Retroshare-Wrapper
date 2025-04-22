@@ -1,5 +1,4 @@
-
-part of rsModels;
+// ignore_for_file: constant_identifier_names
 
 enum RsGxsCircleType {
   /// Used to detect uninizialized values.

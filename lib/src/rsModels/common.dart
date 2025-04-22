@@ -1,12 +1,16 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-part of rsModels;
+part 'common.freezed.dart';
+part 'common.g.dart';
 
-class RsInt64 {
-  String xstr64;
-  int xint64;
+@freezed
+class RsInt64 with _$RsInt64 {
+  const factory RsInt64({
+    @Default('0') String xstr64,
+    @Default(0) int xint64,
+  }) = _RsInt64;
+  const RsInt64._();
 
-  RsInt64({this.xint64 = 0, this.xstr64 = '0'});
-
-  RsInt64.fromJson(Map<String, dynamic> jsonObj)
-      : this(xstr64: jsonObj['xstr64'], xint64: jsonObj['xint64']);
+  factory RsInt64.fromJson(Map<String, dynamic> json) =>
+      _$RsInt64FromJson(json);
 }

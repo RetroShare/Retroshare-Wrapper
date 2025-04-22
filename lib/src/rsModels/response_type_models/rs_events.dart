@@ -1,10 +1,6 @@
-
-part of rsModels;
+// ignore_for_file: constant_identifier_names
 
 enum RsEventType {
-  /// Used internally to detect invalid event type passed = 0,
-  __NONE,
-
   /// @see RsBroadcastDiscovery = 1,
   BROADCAST_DISCOVERY,
 

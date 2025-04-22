@@ -1,43 +1,50 @@
-part of rsModels;
+// ignore_for_file: invalid_annotation_target
 
-class ChatId {
-  String? broadcastStatusPeerId;
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:retroshare_api_wrapper/src/rsModels/chat_type_models/chat_lobby_id.dart';
 
-  ChatIdType? type;
-  //enum typeEnum {  0,  1,  2,  3,  4,  };{
+part 'chat_id.freezed.dart';
+part 'chat_id.g.dart';
 
-  String? peerId;
+enum ChatIdType {
+  @JsonValue(0)
+  type0,
+  @JsonValue(1)
+  type1,
+  @JsonValue(2)
+  type2,
+  @JsonValue(3)
+  type3,
+  @JsonValue(4)
+  type4;
 
-  String? distantChatId;
+  factory ChatIdType.fromJson(dynamic json) {
+    return ChatIdType.values.firstWhere(
+      (e) => e.index == json,
+      orElse: () => throw ArgumentError('Unknown ChatIdType value: $json'),
+    );
+  }
 
-  ChatLobbyId? lobbyId;
-  ChatId();
+  int toJson() => index;
+}
+
+@freezed
+class ChatId with _$ChatId {
+  const factory ChatId({
+    @JsonKey(name: 'broadcast_status_peer_id') String? broadcastStatusPeerId,
+    ChatIdType? type,
+    @JsonKey(name: 'peer_id') String? peerId,
+    @JsonKey(name: 'distant_chat_id') String? distantChatId,
+    @JsonKey(name: 'lobby_id') ChatLobbyId? lobbyId,
+  }) = _ChatId;
+  const ChatId._();
+
+  factory ChatId.fromJson(Map<String, dynamic> json) => _$ChatIdFromJson(json);
 
   @override
   String toString() {
-    return 'ChatId[broadcastStatusPeerId=$broadcastStatusPeerId, type=$type, peerId=$peerId, distantChatId=$distantChatId, lobbyId=$lobbyId, ]';
-  }
-
-  ChatId.fromJson(Map<String, dynamic> json) {
-    if (json == null) return;
-    broadcastStatusPeerId = json['broadcast_status_peer_id'];
-    type = (json['type'] == null) ? null : ChatIdType.fromJson(json['type']);
-    peerId = json['peer_id'];
-    distantChatId = json['distant_chat_id'];
-    lobbyId = (json['lobby_id'] == null)
-        ? null
-        : ChatLobbyId.fromJson(json['lobby_id']);
-  }
-
-  Map<String, dynamic> toJson() {
-    var json = <String, dynamic>{};
-    if (broadcastStatusPeerId != null) {
-      json['broadcast_status_peer_id'] = broadcastStatusPeerId;
-    }
-    if (type != null) json['type'] = type;
-    if (peerId != null) json['peer_id'] = peerId;
-    if (distantChatId != null) json['distant_chat_id'] = distantChatId;
-    if (lobbyId != null) json['lobby_id'] = lobbyId;
-    return json;
+    return 'ChatId[broadcastStatusPeerId=$broadcastStatusPeerId, '
+        'type=$type, peerId=$peerId, '
+        'distantChatId=$distantChatId, lobbyId=$lobbyId]';
   }
 }
