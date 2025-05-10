@@ -68,7 +68,7 @@ Future<bool> restartRSIfDown() async {
 Future<bool> isRetroshareRunning() async {
   final reqUrl = getRetroshareServicePrefix();
   try {
-    final response = await http.get(Uri.parse(reqUrl));
+    final response = await http.get(Uri.parse('$reqUrl/rsJsonApi/version'));
     // Return true if the status code is 200 (OK) or similar success code
     return response.statusCode >= 200 && response.statusCode < 300;
   } catch (err) {
@@ -249,7 +249,7 @@ Future<Map<String, dynamic>> rsApiCall(
 }) async {
   final httpClient = client ?? http.Client();
   try {
-    final reqUrl = 'http://localhost:9092$path';
+    final reqUrl = '${getRetroshareServicePrefix()}$path';
     final response = await httpClient.post(
       Uri.parse(reqUrl),
       body: jsonEncode(params ?? {}),
@@ -1889,8 +1889,9 @@ class RsFiles {
 
 class RsJsonApi {
   static Future<bool> isAuthTokenValid(AuthToken authToken) async {
+    final reqUrl = getRetroshareServicePrefix();
     final response = await http.get(
-      Uri.parse('http://localhost:9092/RsJsonApi/getAuthorizedTokens'),
+      Uri.parse('$reqUrl/getAuthorizedTokens'),
       headers: {
         HttpHeaders.authorizationHeader:
             'Basic ${base64.encode(utf8.encode('$authToken'))}',
@@ -1908,8 +1909,9 @@ class RsJsonApi {
     String password,
     AuthToken authToken,
   ) async {
+    final reqUrl = getRetroshareServicePrefix();
     final response = await http.get(
-      Uri.parse('http://localhost:9092/RsJsonApi/getAuthorizedTokens'),
+      Uri.parse('$reqUrl/RsJsonApi/getAuthorizedTokens'),
       headers: {
         HttpHeaders.authorizationHeader:
             'Basic ${base64.encode(utf8.encode('$locationId:$password'))}',
@@ -1937,8 +1939,9 @@ class RsJsonApi {
     String password,
     AuthToken authToken,
   ) async {
+    final reqUrl = getRetroshareServicePrefix();
     final response = await http.post(
-      Uri.parse('http://localhost:9092/RsJsonApi/authorizeUser'),
+      Uri.parse('$reqUrl/RsJsonApi/authorizeUser'),
       body: json.encode({'token': '$authToken'}),
       headers: {
         HttpHeaders.authorizationHeader:
