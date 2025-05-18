@@ -4,7 +4,7 @@ import 'package:retroshare_api_wrapper/src/rs_models.dart';
 part 'chat.freezed.dart';
 part 'chat.g.dart';
 
-@freezed
+@unfreezed
 class Chat with _$Chat {
   const factory Chat({
     String? chatId,
