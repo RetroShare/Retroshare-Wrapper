@@ -21,15 +21,25 @@ Chat _$ChatFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Chat {
   String? get chatId => throw _privateConstructorUsedError;
+  set chatId(String? value) => throw _privateConstructorUsedError;
   String? get chatName => throw _privateConstructorUsedError;
+  set chatName(String? value) => throw _privateConstructorUsedError;
   String get ownIdToUse => throw _privateConstructorUsedError;
+  set ownIdToUse(String value) => throw _privateConstructorUsedError;
   String get interlocutorId => throw _privateConstructorUsedError;
+  set interlocutorId(String value) => throw _privateConstructorUsedError;
   String? get lobbyTopic => throw _privateConstructorUsedError;
+  set lobbyTopic(String? value) => throw _privateConstructorUsedError;
   bool get isPublic => throw _privateConstructorUsedError;
+  set isPublic(bool value) => throw _privateConstructorUsedError;
   int? get numberOfParticipants => throw _privateConstructorUsedError;
+  set numberOfParticipants(int? value) => throw _privateConstructorUsedError;
   int? get lobbyFlags => throw _privateConstructorUsedError;
+  set lobbyFlags(int? value) => throw _privateConstructorUsedError;
   bool? get autoSubscribe => throw _privateConstructorUsedError;
+  set autoSubscribe(bool? value) => throw _privateConstructorUsedError;
   int get unreadCount => throw _privateConstructorUsedError;
+  set unreadCount(int value) => throw _privateConstructorUsedError;
 
   /// Serializes this Chat to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -237,72 +247,31 @@ class _$ChatImpl extends _Chat {
       _$$ChatImplFromJson(json);
 
   @override
-  final String? chatId;
+  String? chatId;
   @override
-  final String? chatName;
+  String? chatName;
   @override
-  final String ownIdToUse;
+  String ownIdToUse;
   @override
-  final String interlocutorId;
+  String interlocutorId;
   @override
-  final String? lobbyTopic;
+  String? lobbyTopic;
   @override
-  final bool isPublic;
+  bool isPublic;
   @override
-  final int? numberOfParticipants;
+  int? numberOfParticipants;
   @override
-  final int? lobbyFlags;
+  int? lobbyFlags;
   @override
-  final bool? autoSubscribe;
+  bool? autoSubscribe;
   @override
   @JsonKey()
-  final int unreadCount;
+  int unreadCount;
 
   @override
   String toString() {
     return 'Chat(chatId: $chatId, chatName: $chatName, ownIdToUse: $ownIdToUse, interlocutorId: $interlocutorId, lobbyTopic: $lobbyTopic, isPublic: $isPublic, numberOfParticipants: $numberOfParticipants, lobbyFlags: $lobbyFlags, autoSubscribe: $autoSubscribe, unreadCount: $unreadCount)';
   }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$ChatImpl &&
-            (identical(other.chatId, chatId) || other.chatId == chatId) &&
-            (identical(other.chatName, chatName) ||
-                other.chatName == chatName) &&
-            (identical(other.ownIdToUse, ownIdToUse) ||
-                other.ownIdToUse == ownIdToUse) &&
-            (identical(other.interlocutorId, interlocutorId) ||
-                other.interlocutorId == interlocutorId) &&
-            (identical(other.lobbyTopic, lobbyTopic) ||
-                other.lobbyTopic == lobbyTopic) &&
-            (identical(other.isPublic, isPublic) ||
-                other.isPublic == isPublic) &&
-            (identical(other.numberOfParticipants, numberOfParticipants) ||
-                other.numberOfParticipants == numberOfParticipants) &&
-            (identical(other.lobbyFlags, lobbyFlags) ||
-                other.lobbyFlags == lobbyFlags) &&
-            (identical(other.autoSubscribe, autoSubscribe) ||
-                other.autoSubscribe == autoSubscribe) &&
-            (identical(other.unreadCount, unreadCount) ||
-                other.unreadCount == unreadCount));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      chatId,
-      chatName,
-      ownIdToUse,
-      interlocutorId,
-      lobbyTopic,
-      isPublic,
-      numberOfParticipants,
-      lobbyFlags,
-      autoSubscribe,
-      unreadCount);
 
   /// Create a copy of Chat
   /// with the given fields replaced by the non-null parameter values.
@@ -322,40 +291,50 @@ class _$ChatImpl extends _Chat {
 
 abstract class _Chat extends Chat {
   const factory _Chat(
-      {final String? chatId,
-      final String? chatName,
-      required final String ownIdToUse,
-      required final String interlocutorId,
-      final String? lobbyTopic,
-      required final bool isPublic,
-      final int? numberOfParticipants,
-      final int? lobbyFlags,
-      final bool? autoSubscribe,
-      final int unreadCount}) = _$ChatImpl;
+      {String? chatId,
+      String? chatName,
+      required String ownIdToUse,
+      required String interlocutorId,
+      String? lobbyTopic,
+      required bool isPublic,
+      int? numberOfParticipants,
+      int? lobbyFlags,
+      bool? autoSubscribe,
+      int unreadCount}) = _$ChatImpl;
   const _Chat._() : super._();
 
   factory _Chat.fromJson(Map<String, dynamic> json) = _$ChatImpl.fromJson;
 
   @override
   String? get chatId;
+  set chatId(String? value);
   @override
   String? get chatName;
+  set chatName(String? value);
   @override
   String get ownIdToUse;
+  set ownIdToUse(String value);
   @override
   String get interlocutorId;
+  set interlocutorId(String value);
   @override
   String? get lobbyTopic;
+  set lobbyTopic(String? value);
   @override
   bool get isPublic;
+  set isPublic(bool value);
   @override
   int? get numberOfParticipants;
+  set numberOfParticipants(int? value);
   @override
   int? get lobbyFlags;
+  set lobbyFlags(int? value);
   @override
   bool? get autoSubscribe;
+  set autoSubscribe(bool? value);
   @override
   int get unreadCount;
+  set unreadCount(int value);
 
   /// Create a copy of Chat
   /// with the given fields replaced by the non-null parameter values.
