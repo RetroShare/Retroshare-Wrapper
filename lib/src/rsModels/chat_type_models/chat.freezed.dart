@@ -230,7 +230,7 @@ class __$$ChatImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$ChatImpl extends _Chat {
-  const _$ChatImpl(
+  _$ChatImpl(
       {this.chatId,
       this.chatName,
       required this.ownIdToUse,
@@ -290,7 +290,7 @@ class _$ChatImpl extends _Chat {
 }
 
 abstract class _Chat extends Chat {
-  const factory _Chat(
+  factory _Chat(
       {String? chatId,
       String? chatName,
       required String ownIdToUse,
@@ -301,7 +301,7 @@ abstract class _Chat extends Chat {
       int? lobbyFlags,
       bool? autoSubscribe,
       int unreadCount}) = _$ChatImpl;
-  const _Chat._() : super._();
+  _Chat._() : super._();
 
   factory _Chat.fromJson(Map<String, dynamic> json) = _$ChatImpl.fromJson;
 

@@ -6,7 +6,7 @@ part 'chat.g.dart';
 
 @unfreezed
 class Chat with _$Chat {
-  const factory Chat({
+  factory Chat({
     String? chatId,
     String? chatName,
     required String ownIdToUse,
@@ -18,7 +18,8 @@ class Chat with _$Chat {
     bool? autoSubscribe,
     @Default(0) int unreadCount,
   }) = _Chat;
-  const Chat._();
+  
+  Chat._();
 
   factory Chat.fromJson(Map<String, dynamic> json) => _$ChatFromJson(json);
 
