@@ -3,6 +3,7 @@
 
 A Dart package providing a wrapper around the RetroShare JSON-RPC API, enabling interaction with a running RetroShare node from Dart and Flutter applications.
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/RetroShare/Retroshare-Wrapper)
 ## Features
 
 *   **Authentication:** Log in, manage API tokens.
