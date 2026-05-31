@@ -28,8 +28,9 @@ enum ChatIdType {
   int toJson() => index;
 }
 
-@freezed
+@Freezed()
 class ChatId with _$ChatId {
+  @JsonSerializable(includeIfNull: false)
   const factory ChatId({
     @JsonKey(name: 'broadcast_status_peer_id') String? broadcastStatusPeerId,
     ChatIdType? type,
