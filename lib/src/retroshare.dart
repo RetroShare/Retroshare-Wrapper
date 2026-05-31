@@ -68,11 +68,10 @@ Future<bool> restartRSIfDown() async {
 Future<bool> isRetroshareRunning() async {
   final reqUrl = getRetroshareServicePrefix();
   try {
-    final response = await http.get(Uri.parse('$reqUrl/rsJsonApi/version'));
-    // Return true if the status code is 200 (OK) or similar success code
-    return response.statusCode >= 200 && response.statusCode < 300;
+    // If the server responds at all (even with 401 or 404), it means the process is running.
+    final response = await http.get(Uri.parse('$reqUrl/rsJsonApi/version')).timeout(const Duration(seconds: 2));
+    return response.statusCode != 0; 
   } catch (err) {
-    // If any error occurs (e.g., connection refused), return false
     return false;
   }
 }
