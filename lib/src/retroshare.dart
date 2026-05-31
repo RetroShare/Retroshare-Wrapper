@@ -248,6 +248,7 @@ Future<Map<String, dynamic>> rsApiCall(
   http.Client? client,
 }) async {
   final httpClient = client ?? http.Client();
+  final authTokenString = authToken?.authToken;
   try {
     final reqUrl = '${getRetroshareServicePrefix()}$path';
     final response = await httpClient.post(
@@ -255,7 +256,7 @@ Future<Map<String, dynamic>> rsApiCall(
       body: jsonEncode(params ?? {}),
       headers: {
         HttpHeaders.authorizationHeader:
-            'Basic ${base64.encode(utf8.encode('$authToken'))}',
+            'Basic ${base64.encode(utf8.encode('$authTokenString'))}',
       },
     );
 
