@@ -116,11 +116,6 @@ class _$AuthTokenImpl extends _AuthToken {
   final String password;
 
   @override
-  String toString() {
-    return 'AuthToken(username: $username, password: $password)';
-  }
-
-  @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&

@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'auth.freezed.dart';
 // No .g.dart as there was no initial fromJson/toJson
 
-@freezed
+@Freezed(toStringOverride: false)
 class AuthToken with _$AuthToken {
   // Factory constructor for the main instance
   // Fields were 'final' so they become 'required'
@@ -20,8 +20,7 @@ class AuthToken with _$AuthToken {
   // Custom toString (will potentially be overridden by freezed's,
   // but can be kept here if this exact format is preferred)
   // If this specific format is *really* desired, override it:
-  // @override
-  // String toString() => authToken;
-  // Otherwise, let freezed generate its toString() which includes all fields.
-  // For now, let's let freezed generate its own.
+  @override
+  String toString() => authToken;
+
 }
