@@ -236,6 +236,20 @@ void setStartCallback(dynamic callback) {
   rsStartCallback = callback;
 }
 
+/// Recursively removes null values from a map or list
+dynamic _stripNulls(dynamic item) {
+  if (item is Map) {
+    return Map.fromEntries(
+      item.entries
+          .where((e) => e.value != null)
+          .map((e) => MapEntry(e.key, _stripNulls(e.value))),
+    );
+  } else if (item is List) {
+    return item.where((v) => v != null).map(_stripNulls).toList();
+  }
+  return item;
+}
+
 /// Call the given RetroShare JSON API method with given paramethers, and return
 /// results, raise exceptions on errors.
 /// Path is expected to contain a leading slash "/" and params is expected to
@@ -256,9 +270,13 @@ Future<Map<String, dynamic>> rsApiCall(
       headers[HttpHeaders.authorizationHeader] =
           'Basic ${base64.encode(utf8.encode(authToken.toString()))}';
     }
+
+    // Crucial: Strip nulls from params as RS C++ engine rejects them
+    final cleanParams = _stripNulls(params ?? {});
+
     final response = await httpClient.post(
       Uri.parse(reqUrl),
-      body: jsonEncode(params ?? {}),
+      body: jsonEncode(cleanParams),
       headers: headers,
     );
 
@@ -1153,7 +1171,7 @@ class RsMsgs {
     ChatId id;
     // Correct the enum name checks
     if (type == ChatIdType.type2) {
-      id = ChatId(type: type, distantChatId: chatId);
+      id = ChatId(type: type, peerId: chatId);
     } else if (type == ChatIdType.type3) {
       // Create ChatLobbyId using the constructor
       id = ChatId(type: type, lobbyId: ChatLobbyId(xstr64: chatId));
