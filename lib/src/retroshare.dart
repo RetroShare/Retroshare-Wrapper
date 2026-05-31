@@ -1171,7 +1171,7 @@ class RsMsgs {
     ChatId id;
     // Correct the enum name checks
     if (type == ChatIdType.type2) {
-      id = ChatId(type: type, peerId: chatId);
+      id = ChatId(type: type, distantChatId: chatId);
     } else if (type == ChatIdType.type3) {
       // Create ChatLobbyId using the constructor
       id = ChatId(type: type, lobbyId: ChatLobbyId(xstr64: chatId));
