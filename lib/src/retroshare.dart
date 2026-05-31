@@ -109,7 +109,7 @@ class RsEvents {
       final request = http.Request('GET', Uri.parse(reqUrl));
       request.headers.addAll({
         HttpHeaders.authorizationHeader:
-            'Basic ${base64.encode(utf8.encode('$authToken'))}',
+            'Basic ${base64.encode(utf8.encode(authToken.toString()))}',
         HttpHeaders.contentTypeHeader: 'application/json',
         HttpHeaders.acceptHeader: 'text/event-stream', // Important for SSE
         HttpHeaders.cacheControlHeader: 'no-cache', // Important for SSE
@@ -250,13 +250,17 @@ Future<Map<String, dynamic>> rsApiCall(
   final httpClient = client ?? http.Client();
   try {
     final reqUrl = '${getRetroshareServicePrefix()}$path';
+    final Map<String, String> headers = {
+      HttpHeaders.contentTypeHeader: 'application/json',
+    };
+    if (authToken != null) {
+      headers[HttpHeaders.authorizationHeader] =
+          'Basic ${base64.encode(utf8.encode(authToken.toString()))}';
+    }
     final response = await httpClient.post(
       Uri.parse(reqUrl),
       body: jsonEncode(params ?? {}),
-      headers: {
-        HttpHeaders.authorizationHeader:
-            'Basic ${base64.encode(utf8.encode('$authToken'))}',
-      },
+      headers: headers,
     );
 
     if (response.statusCode == 200) {
@@ -299,7 +303,10 @@ class RsAccounts {
     try {
       const mPath = '/rsAccounts/getCurrentAccountId';
       final response = await rsApiCall(mPath, authToken: authToken);
-      if (response['retval']) return response['id'];
+      final retval = response['retval'];
+      if ((retval is bool && retval) || (retval is int && retval == 1)) {
+        return response['id'];
+      }
       return null;
     } catch (err) {
       throw Exception('something went wrong!');
@@ -343,7 +350,10 @@ class RsLoginHelper {
   static Future<dynamic> checkLoggedIn() async {
     const mPath = '/rsLoginHelper/isLoggedIn';
     final response = await rsApiCall(mPath);
-    return response['retval'];
+    final retval = response['retval'];
+    if (retval is bool) return retval;
+    if (retval is int) return retval == 1;
+    return false;
   }
 
   static Future<dynamic> getLocations() async {
@@ -414,7 +424,8 @@ class RsIdentity {
       final response =
           await rsApiCall(mPath, authToken: authToken, params: mParams);
 
-      return response['retval'] == true;
+      final retval = response['retval'];
+      return (retval is bool && retval) || (retval is int && retval == 1);
     } catch (err) {
       throw Exception('something went wrong!');
     }
@@ -427,7 +438,9 @@ class RsIdentity {
       final response =
           await rsApiCall(mPath, authToken: authToken, params: mParams);
 
-      if (response['retval'] != true) throw Exception();
+      final retval = response['retval'];
+      final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+      if (!success) throw Exception();
     } catch (err) {
       rethrow;
     }
@@ -442,13 +455,18 @@ class RsIdentity {
     var response =
         await rsApiCall(mPath, authToken: authToken, params: mParams);
 
-    if (response['retval'] != true) {
+    var retval = response['retval'];
+    var success = (retval is bool && retval) || (retval is int && retval == 1);
+
+    if (!success) {
       // TODO(nicoechaniz): for some reason RS is not getting this right all the time and response["details"] responds with
       // a json with the structure byt no data, so we repeat with a delay. Check upstream if this is intended.
       await Future.delayed(const Duration(seconds: 2));
       response = await rsApiCall(mPath, authToken: authToken, params: mParams);
+      retval = response['retval'];
+      success = (retval is bool && retval) || (retval is int && retval == 1);
     }
-    if (response['retval'] != true) {
+    if (!success) {
       throw Exception('Could not retrieve details for id $identityId');
     }
     return response;
@@ -464,10 +482,12 @@ class RsIdentity {
       '/rsIdentity/getIdentitiesSummaries',
       authToken: authToken,
     );
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception('Could not retrieve identities summaries');
     }
-    return response['ids'];
+    return response['ids'] ?? [];
   }
 
   /// Get identities information (name, avatar...).
@@ -483,10 +503,12 @@ class RsIdentity {
       authToken: authToken,
       params: {'ids': ids},
     );
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception("Can't retrieve getIdentitiesInfo for $ids");
     }
-    return response['idsInfo'];
+    return response['idsInfo'] ?? [];
   }
 
   static Future<Identity> createIdentity(
@@ -505,7 +527,8 @@ class RsIdentity {
 
       final response =
           await rsApiCall(mPath, authToken: authToken, params: params);
-      if (response['retval']) {
+      final retval = response['retval'];
+      if ((retval is bool && retval) || (retval is int && retval == 1)) {
         return Identity(
           mId: response['id'],
           signed: identity.signed,
@@ -548,7 +571,8 @@ class RsIdentity {
       params: {'enabled': enabled},
     );
 
-    return response['retval'];
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   /// Update identity data (name, avatar...)
@@ -578,7 +602,8 @@ class RsIdentity {
     final response =
         await rsApiCall(mPath, authToken: authToken, params: params);
 
-    return response['retval'] == true;
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   /// Set/unset identity as contact
@@ -596,7 +621,8 @@ class RsIdentity {
       authToken: authToken,
       params: {'id': id, 'isContact': isContact},
     );
-    return response['retval'];
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   static Future<bool> setContact(
@@ -609,7 +635,8 @@ class RsIdentity {
       authToken: authToken,
       params: {'id': id, 'isContact': makeContact},
     );
-    return response['retval'];
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   static Future<bool> deleteIdentity(
@@ -622,7 +649,9 @@ class RsIdentity {
       authToken: authToken,
       params: {'id': identity.mId},
     );
-    return response['retval'] == false;
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    return !success; // Based on original logic
   }
 }
 
@@ -666,7 +695,9 @@ class RsPeers {
       authToken: authToken,
       params: mParams,
     );
-    if (!response['retval']) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception('Could not get short invite for $sslId');
     }
     return response['invite'].substring(31);
@@ -683,7 +714,8 @@ class RsPeers {
     final response =
         await rsApiCall(mPath, authToken: authToken, params: mParams);
 
-    return response['retval'] == true;
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   static Future<bool> isSslOnlyFriend(String sslId, AuthToken authToken) async {
@@ -691,7 +723,8 @@ class RsPeers {
     final mParams = {'sslId': sslId};
     final response =
         await rsApiCall(mPath, authToken: authToken, params: mParams);
-    return response['retval'] == true;
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   /// Accepts long invite codes only
@@ -708,8 +741,9 @@ class RsPeers {
       params: mParams,
       client: client,
     );
-    // Revert: This method simply returns the boolean value from the API
-    return response['retval'] ?? false;
+    print('API Response (acceptInvite): $response');
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   /// Accepts short invite codes only
@@ -729,12 +763,8 @@ class RsPeers {
     final response =
         await rsApiCall(mPath, authToken: authToken, params: params);
 
-    // if (response["retval"] != true)
-    //   throw Exception("The invitation could not be accepted");
-
-    // TODO: Fail on RS if public key is not ready
-
-    return response['retval'] == true;
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   static Future<void> connectAttempt(String sslId, AuthToken authToken) async {
@@ -743,7 +773,9 @@ class RsPeers {
     final response =
         await rsApiCall(mPath, authToken: authToken, params: params);
 
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception('The connection attempt could not be completed');
     }
   }
@@ -757,7 +789,10 @@ class RsPeers {
     final response =
         await rsApiCall(mPath, authToken: authToken, params: params1);
 
-    if (response['retval'] != true && response['retval'] != 1) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    
+    if (!success) {
       throw Exception('Could not parse the short invite code');
     } else if (response['details'] is! Map ||
         response['details']['id'] is! String ||
@@ -826,7 +861,6 @@ class RsPeers {
       client: client,
     ); // Pass client
 
-    // rsApiCall checks retval=true
     if (response['sslIds'] is! List) {
       // Update exception message to match test
       throw Exception('API Error: Failed to get list (Invalid format)');
@@ -845,21 +879,23 @@ class RsPeers {
       mPath,
       authToken: authToken,
       client: client,
-    ); // Pass client
+    );
+    print('API Response (getFriendList): $response');
 
-    // rsApiCall checks retval=true
-    if (response['sslIds'] is! List) {
-      // Update exception message to match test
-      throw Exception('API Error: Failed to get list (Invalid format)');
+    if (response['sslIds'] is List) {
+      return response['sslIds'].cast<String>().toList();
     }
-
-    return response['sslIds'].cast<String>().toList();
+    
+    // Some versions return empty list if no friends, but ensure we return something valid
+    return [];
   }
 
   static Future<List<dynamic>> getGroupInfoList(AuthToken authToken) async {
     final response =
         await rsApiCall('/rsPeers/getGroupInfoList', authToken: authToken);
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception('Could not retrieve groups info');
     }
     return response['groupInfoList'];
@@ -878,8 +914,8 @@ class RsPeers {
       params: params,
       client: client,
     );
-    // Revert: This method simply returns the boolean value from the API
-    return response['retval'] ?? false;
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   static Future<bool> isFriend(String sslId, AuthToken authToken) async {
@@ -888,7 +924,8 @@ class RsPeers {
     final response =
         await rsApiCall(mPath, authToken: authToken, params: params);
 
-    return response['retval'] == true;
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   static Future<bool> removeFriend(
@@ -905,14 +942,13 @@ class RsPeers {
       client: client,
     );
 
-    // Re-add specific check for this method: failure *is* an exception here.
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception(
         'Remove friend API call failed: ${response["errorMessage"] ?? "retval was not true"}',
       );
     }
-    // If no exception was thrown by rsApiCall (e.g., for HTTP errors)
-    // and retval is true, then the operation succeeded.
     return true;
   }
 }
@@ -925,7 +961,9 @@ class RsBroadcastDiscovery {
   static Future<void> enableMulticastListening() async {
     final response =
         await rsApiCall('/rsBroadcastDiscovery/isMulticastListeningEnabled');
-    if (!response['retval']) {
+    final retval = response['retval'];
+    final bool isEnabled = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!isEnabled) {
       await rsApiCall('/rsBroadcastDiscovery/enableMulticastListening');
     }
   }
@@ -993,7 +1031,8 @@ class RsMsgs {
     final response =
         await rsApiCall('/rsMsgs/getMessage', params: {'msgId': msgId});
 
-    if (response['retval'] != true) return null;
+    final retval = response['retval'];
+    if (!((retval is bool && retval) || (retval is int && retval == 1))) return null;
     return response['msg'] ?? {};
   }
 
@@ -1005,7 +1044,8 @@ class RsMsgs {
     final response =
         await rsApiCall('/rsMsgs/MessageDelete', params: {'msgId': msgId});
 
-    return response['retval'] == true;
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   static Future<bool> createChatLobby(
@@ -1083,7 +1123,8 @@ class RsMsgs {
       authToken: authToken,
       params: params,
     );
-    return response['retval'];
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   static Future<void> unsubscribeChatLobby(
@@ -1122,12 +1163,15 @@ class RsMsgs {
     }
 
     final params = {'id': id.toJson(), 'msg': msgTxt};
+    print('DEBUG: RsMsgs.sendMessage params: ${jsonEncode(params)}');
     final response = await rsApiCall(
       '/rsMsgs/sendChat',
       authToken: authToken,
       params: params,
     );
-    return response['retval'];
+    print('DEBUG: RsMsgs.sendMessage response: $response');
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   static Future<void> denyLobbyInvite(
@@ -1157,7 +1201,8 @@ class RsMsgs {
         'identity': rsgxsId,
       },
     );
-    return response['retval'];
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   static Future<Map<dynamic, dynamic>> c(Chat chat, AuthToken authToken) async {
@@ -1189,7 +1234,9 @@ class RsMsgs {
       authToken: authToken,
       params: {'pid': pid},
     );
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw 'Error on getDistantChatStatus()';
     }
     return DistantChatPeerInfo.fromJson(response['info']);
@@ -1224,8 +1271,10 @@ class RsMsgs {
 
     final response =
         await rsApiCall(mPath, authToken: authToken, params: mParams);
-    if (response['retval']) await setLobbyAutoSubscribe(chatId, authToken);
-    return response['retval'];
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (success) await setLobbyAutoSubscribe(chatId, authToken);
+    return success;
   }
 
   static Future<dynamic> getChatLobbyInfo(
@@ -1238,7 +1287,8 @@ class RsMsgs {
     };
     final response =
         await rsApiCall(mPath, authToken: authToken, params: mParams);
-    if (response['retval']) {
+    final retval = response['retval'];
+    if ((retval is bool && retval) || (retval is int && retval == 1)) {
       return response['info'];
     } else {
       throw Exception('Something went wrong!');
@@ -1283,7 +1333,9 @@ class RsGxsChannel {
       params: {'channelId': channelId, 'subscribe': true},
     );
 
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception('Could not subscribe');
     }
   }
@@ -1294,7 +1346,9 @@ class RsGxsChannel {
       params: {'channelId': channelId, 'subscribe': false},
     );
 
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception('Could not unsubscribe');
     }
   }
@@ -1313,7 +1367,9 @@ class RsGxsChannel {
       params: {'channelId': channelId},
     );
 
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception('Could not subscribe');
     } else if (response['summaries'] is! List) {
       throw Exception('Invalid summaries');
@@ -1327,7 +1383,9 @@ class RsGxsChannel {
   static Future<List<Map<String, dynamic>>> getChannelsSummaries() async {
     final response = await rsApiCall('/rsGxsChannels/getChannelsSummaries');
 
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception('Could not retrieve the summary');
     } else if (response['channels'] is! List) {
       throw Exception('Invalid channels');
@@ -1350,7 +1408,9 @@ class RsGxsChannel {
       params: {'channelId': channelId, 'contentsIds': msgIds},
     );
 
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception('Could not subscribe');
     } else if (response['posts'] is! List) throw Exception('Invalid posts');
 
@@ -1379,7 +1439,9 @@ class RsGxsChannel {
       params: {'channelId': channelId, 'contentsIds': msgIds},
     );
 
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception('Could not subscribe');
     } else if (response['posts'] is! List) {
       throw Exception('Invalid posts');
@@ -1414,7 +1476,9 @@ class RsGxsChannel {
       },
     );
 
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception('Could not create the comment');
     } else if (response['errorMessage'] is String &&
         response['errorMessage'].length > 0) {
@@ -1442,7 +1506,8 @@ class RsGxsForum {
       authToken: authToken,
       params: {'forumId': forumId},
     );
-    return response['retval'];
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   static Future<String> createForumV2(
@@ -1460,7 +1525,9 @@ class RsGxsForum {
         'circleId': circleId,
       },
     );
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception('Forum could not be created.');
     }
     return response['forumId'];
@@ -1485,7 +1552,9 @@ class RsGxsForum {
         'origPostId': origPostId,
       },
     );
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception('${response["errorMessage"]}');
     }
     return response['postMsgId'];
@@ -1496,7 +1565,9 @@ class RsGxsForum {
       '/rsGxsForums/getForumsInfo',
       params: {'forumIds': forumIds},
     );
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception('Could not retrieve forums info');
     }
     return response['forumsInfo'];
@@ -1504,7 +1575,9 @@ class RsGxsForum {
 
   static Future<List<dynamic>> getForumsSummaries() async {
     final response = await rsApiCall('/rsGxsForums/getForumsSummaries');
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception('Could not retrieve forum summaries');
     }
     return response['forums'];
@@ -1515,7 +1588,9 @@ class RsGxsForum {
       '/rsGxsForums/getForumMsgMetaData',
       params: {'forumId': forumId},
     );
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception('Could not retrieve messages metadata');
     }
     return [
@@ -1532,7 +1607,9 @@ class RsGxsForum {
       '/rsGxsForums/getForumContent',
       params: {'forumId': forumId, 'msgsIds': msgIds},
     );
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    final bool success = (retval is bool && retval) || (retval is int && retval == 1);
+    if (!success) {
       throw Exception('Could not retrieve messages content');
     }
     return response['msgs'];
@@ -1543,10 +1620,8 @@ class RsGxsForum {
       '/rsGxsForums/subscribeToForum',
       params: {'forumId': forumId, 'subscribe': true},
     );
-    if (response['retval'] != true) {
-      throw Exception('Could not subscribe to forum');
-    }
-    return response['retval'] == true;
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   static Future<void> requestSynchronization() async {
@@ -1565,7 +1640,8 @@ class RsGxsForum {
       '/rsGxsForums/getChildPosts',
       params: {'forumId': forumId, 'parentId': parentId},
     );
-    if (response['retval']['errorNumber'] != 0) {
+    final retval = response['retval'];
+    if (retval is Map && retval['errorNumber'] != 0) {
       throw Exception(
         'Could not retrieve child posts for $forumId/$parentId. Response: $response',
       );
@@ -1586,7 +1662,8 @@ class RsGxsForum {
       '/rsGxsForums/distantSearchRequest',
       params: {'matchString': matchString},
     );
-    if (response['retval']['errorNumber'] != 0) {
+    final retval = response['retval'];
+    if (retval is Map && retval['errorNumber'] != 0) {
       throw Exception("Error: ${errToStr(response["retval"])}");
     }
     return response['searchId'];
@@ -1599,7 +1676,8 @@ class RsGxsForum {
       '/rsGxsForums/localSearch',
       params: {'matchString': matchString},
     );
-    if (response['retval']['errorNumber'] != 0) {
+    final retval = response['retval'];
+    if (retval is Map && retval['errorNumber'] != 0) {
       throw Exception("Error: ${errToStr(response["retval"])}");
     }
 
@@ -1632,10 +1710,8 @@ class RsFiles {
         'flags': flags,
       },
     );
-    if (response['retval'] != true) {
-      throw Exception('File hash process failed.');
-    }
-    return response['retval'] == true;
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   static Future<Map> extraFileStatus(String localPath) async {
@@ -1643,7 +1719,8 @@ class RsFiles {
       '/rsFiles/ExtraFileStatus',
       params: {'localpath': localPath},
     );
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    if (!((retval is bool && retval) || (retval is int && retval == 1))) {
       print('Could not retrieve file status for $localPath');
     }
     return response['info'];
@@ -1661,7 +1738,8 @@ class RsFiles {
     };
 
     final response = await rsApiCall('/rsFiles/exportFileLink', params: params);
-    if (response['retval']['errorNumber'] != 0) {
+    final retval = response['retval'];
+    if (retval is Map && retval['errorNumber'] != 0) {
       throw Exception('Could not export file link. $params');
     }
 
@@ -1671,7 +1749,8 @@ class RsFiles {
   static Future<Map> parseFilesLink(String link) async {
     final response =
         await rsApiCall('/rsFiles/parseFilesLink', params: {'link': link});
-    if (response['retval']['errorNumber'] != 0) {
+    final retval = response['retval'];
+    if (retval is Map && retval['errorNumber'] != 0) {
       throw Exception('Could not parse file link: $link');
     }
 
@@ -1684,7 +1763,8 @@ class RsFiles {
       '/rsFiles/requestFiles',
       params: {'collection': collection},
     );
-    if (response['retval']['errorNumber'] != 0) {
+    final retval = response['retval'];
+    if (retval is Map && retval['errorNumber'] != 0) {
       throw Exception('Files request failed.');
     }
   }
@@ -1694,7 +1774,8 @@ class RsFiles {
       '/rsFiles/setDownloadDirectory',
       params: {'path': path},
     );
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    if (!((retval is bool && retval) || (retval is int && retval == 1))) {
       throw Exception('Error setting download directory. Response: $response');
     }
   }
@@ -1714,7 +1795,8 @@ class RsFiles {
   static Future<List> getSharedDirectories() async {
     final response = await rsApiCall('/rsFiles/getSharedDirectories');
     print('Shared dirs: $response');
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    if (!((retval is bool && retval) || (retval is int && retval == 1))) {
       throw Exception('Error getting shared directories. Response: $response');
     }
     return response['dirs'];
@@ -1728,7 +1810,8 @@ class RsFiles {
     final response =
         await rsApiCall('/rsFiles/removeSharedDirectory', params: {'dir': dir});
 
-    return response['retval'];
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   static Future<void> setPartialsDirectory(String path) async {
@@ -1736,7 +1819,8 @@ class RsFiles {
       '/rsFiles/setPartialsDirectory',
       params: {'path': path},
     );
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    if (!((retval is bool && retval) || (retval is int && retval == 1))) {
       throw Exception(
         'Error setting partial download directory. Response: $response',
       );
@@ -1768,12 +1852,13 @@ class RsFiles {
       },
     );
 
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    if (!((retval is bool && retval) || (retval is int && retval == 1))) {
       throw Exception(
         'Error adding shared directory $filename . $response\nMay be already added',
       );
     }
-    return response['retval'];
+    return true;
   }
 
   static Future<List> fileDownloads() async {
@@ -1803,7 +1888,8 @@ class RsFiles {
         },
       );
     }
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    if (!((retval is bool && retval) || (retval is int && retval == 1))) {
       throw Exception('Error requesting Dir Details.');
     }
     return DirDetails.fromJson(response['details']);
@@ -1823,7 +1909,8 @@ class RsFiles {
       '/rsFiles/FileDetails',
       params: {'hash': hash, 'hintflags': hintflags},
     );
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    if (!((retval is bool && retval) || (retval is int && retval == 1))) {
       print('File with hash $hash not found. Retval: ${response["retval"]}');
     }
     return response['info'];
@@ -1836,7 +1923,8 @@ class RsFiles {
   static Future<Map?>? alreadyHaveFile(String hash) async {
     final response =
         await rsApiCall('/rsFiles/alreadyHaveFile', params: {'hash': hash});
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    if (!((retval is bool && retval) || (retval is int && retval == 1))) {
       return null;
     }
     return response['info'];
@@ -1870,7 +1958,8 @@ class RsFiles {
     );
     print('perceptualSearchRequest');
     print(response);
-    if (response['retval']['errorNumber'] != 0) {
+    final retval = response['retval'];
+    if (retval is Map && retval['errorNumber'] != 0) {
       throw Exception(response['retval']);
     }
     return response['searchId'];
@@ -1891,10 +1980,10 @@ class RsJsonApi {
   static Future<bool> isAuthTokenValid(AuthToken authToken) async {
     final reqUrl = getRetroshareServicePrefix();
     final response = await http.get(
-      Uri.parse('$reqUrl/getAuthorizedTokens'),
+      Uri.parse('$reqUrl/RsJsonApi/getAuthorizedTokens'),
       headers: {
         HttpHeaders.authorizationHeader:
-            'Basic ${base64.encode(utf8.encode('$authToken'))}',
+            'Basic ${base64.encode(utf8.encode(authToken.toString()))}',
       },
     );
 
@@ -1942,10 +2031,11 @@ class RsJsonApi {
     final reqUrl = getRetroshareServicePrefix();
     final response = await http.post(
       Uri.parse('$reqUrl/RsJsonApi/authorizeUser'),
-      body: json.encode({'token': '$authToken'}),
+      body: json.encode({'token': authToken.toString()}),
       headers: {
         HttpHeaders.authorizationHeader:
             'Basic ${base64.encode(utf8.encode('$locationId:$password'))}',
+        HttpHeaders.contentTypeHeader: 'application/json',
       },
     );
 
@@ -1968,7 +2058,8 @@ class RsJsonApi {
 class RsConfig {
   static Future<Map> getMaxDataRates() async {
     final response = await rsApiCall('/rsConfig/GetMaxDataRates');
-    if (response['retval'] != 1) print('Could not get data rates');
+    final retval = response['retval'];
+    if (!((retval is bool && retval) || (retval is int && retval == 1))) print('Could not get data rates');
     final rates = {'inKb': response['inKb'], 'outKb': response['outKb']};
     return rates;
   }
@@ -1978,7 +2069,8 @@ class RsConfig {
       '/rsConfig/SetMaxDataRates',
       params: {'downKb': downKb, 'upKb': upKb},
     );
-    if (response['retval'] != 1) print('Could not set data rates $response');
+    final retval = response['retval'];
+    if (!((retval is bool && retval) || (retval is int && retval == 1))) print('Could not set data rates $response');
     return response;
   }
 }
@@ -2017,7 +2109,8 @@ class RsGxsCircles {
       },
     );
 
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    if (!((retval is bool && retval) || (retval is int && retval == 1))) {
       throw Exception('Error creating circle $circleName . $response');
     }
 
@@ -2044,7 +2137,8 @@ class RsGxsCircles {
       params: {'ownGxsId': ownGxsId ?? id, 'circleId': circleId},
     );
 
-    return response['retval'];
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   /// Invite identities to circle (admin key is required)
@@ -2062,7 +2156,8 @@ class RsGxsCircles {
       params: {'identities': identities, 'circleId': circleId},
     );
 
-    return response['retval'];
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   /// Get circle details. Memory cached
@@ -2075,7 +2170,8 @@ class RsGxsCircles {
     final response =
         await rsApiCall('/rsGxsCircles/getCircleDetails', params: {'id': id});
 
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    if (!((retval is bool && retval) || (retval is int && retval == 1))) {
       throw Exception("Can't retrieve details for $id");
     }
     return response['details'];
@@ -2087,7 +2183,8 @@ class RsGxsCircles {
   static Future<List<dynamic>> getCirclesSummaries() async {
     print('Starting getCirclesSummaries');
     final response = await rsApiCall('/rsGxsCircles/getCirclesSummaries');
-    if (response['retval'] != true) {
+    final retval = response['retval'];
+    if (!((retval is bool && retval) || (retval is int && retval == 1))) {
       throw Exception('Could not retrieve circle summaries');
     }
     return response['circles'];
@@ -2102,7 +2199,8 @@ class RsGxsCircles {
       '/rsGxsCircles/getCirclesInfo',
       params: {'circlesIds': circlesIds},
     );
-    if (!response['retval']) {
+    final retval = response['retval'];
+    if (!((retval is bool && retval) || (retval is int && retval == 1))) {
       throw Exception("Can't getCirclesInfo for $circlesIds");
     }
     return response['circlesInfo'];
@@ -2122,7 +2220,8 @@ class RsGxsCircles {
       params: {'identities': identities, 'circleId': circleId},
     );
 
-    return response['retval'];
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   /// Leave given circle
@@ -2140,7 +2239,8 @@ class RsGxsCircles {
       params: {'ownGxsId': ownGxsId ?? id, 'circleId': circleId},
     );
 
-    return response['retval'];
+    final retval = response['retval'];
+    return (retval is bool && retval) || (retval is int && retval == 1);
   }
 
   /// Edit own existing circle
@@ -2156,7 +2256,8 @@ class RsGxsCircles {
       '/rsGxsCircles/editCircle',
       params: {'cData': circleInfo},
     );
-    if (!response['retval']) {
+    final retval = response['retval'];
+    if (!((retval is bool && retval) || (retval is int && retval == 1))) {
       throw Exception('Could not edit editCircle $circleInfo');
     }
     return response['cData'];
@@ -2233,7 +2334,8 @@ Future<({bool item1, Identity item2})> getIdDetails(
 ) async {
   final response = await RsIdentity.getIdDetails(id, authToken);
 
-  if (response['retval'] as bool) {
+  final retval = response['retval'];
+  if ((retval is bool && retval) || (retval is int && retval == 1)) {
     final identity = Identity(
       mId: id,
       name: response['details']['mNickname'],

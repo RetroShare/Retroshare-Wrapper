@@ -26,5 +26,5 @@ class ChatMessage with _$ChatMessage {
       _$ChatMessageFromJson(json);
 
   /// Custom method (like the original `isLobbyMessage`)
-  bool isLobbyMessage() => chatId?.lobbyId?.xstr64 != '0';
+  bool isLobbyMessage() => chatId?.type == ChatIdType.type3;
 }
