@@ -536,19 +536,21 @@ class RsIdentity {
     return null;
   }
 
-  static Future<bool> setAutoAddFriendIdsAsContact(
+  static Future<void> setAutoAddFriendIdsAsContact(
     bool enabled,
     AuthToken authToken,
   ) async {
     const mPath = '/rsIdentity/setAutoAddFriendIdsAsContact';
 
-    final response = await rsApiCall(
+    // if the rsApi call was a success
+    // In case of failure, automatically exception will be thrown.
+    // No need to check for boolean values here, since 
+    // in case of 200, empty response body is being sent.
+    await rsApiCall(
       mPath,
       authToken: authToken,
       params: {'enabled': enabled},
     );
-
-    return response['retval'];
   }
 
   /// Update identity data (name, avatar...)
