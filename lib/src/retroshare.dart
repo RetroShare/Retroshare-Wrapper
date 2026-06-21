@@ -362,7 +362,7 @@ class RsLoginHelper {
     String nodeName = 'Mobile',
   ]) async {
     final mParams = {
-      'locationName': username,
+      'locationName': nodeName,
       'pgpName': username,
       'password': password,
       'apiUser': username,
