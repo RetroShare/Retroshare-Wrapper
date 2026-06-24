@@ -14,6 +14,7 @@ _$IdentityImpl _$$IdentityImplFromJson(Map<String, dynamic> json) =>
       avatar: json['avatar'] as String?,
       signed: json['signed'] as bool,
       isContact: json['isContact'] as bool,
+      status: (json['status'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$$IdentityImplToJson(_$IdentityImpl instance) =>
@@ -24,4 +25,5 @@ Map<String, dynamic> _$$IdentityImplToJson(_$IdentityImpl instance) =>
       'avatar': instance.avatar,
       'signed': instance.signed,
       'isContact': instance.isContact,
+      'status': instance.status,
     };

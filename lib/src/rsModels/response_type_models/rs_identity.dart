@@ -12,6 +12,7 @@ class Identity with _$Identity {
     String? avatar, // This is an alias for _avatar field
     required bool signed,
     required bool isContact,
+    @Default(0) int status, // 0: Offline, 1: Online, 2: Away, 3: Busy
   }) = _Identity;
 
   factory Identity.fromJson(Map<String, dynamic> json) =>

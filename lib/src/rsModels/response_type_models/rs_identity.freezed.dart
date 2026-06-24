@@ -27,6 +27,7 @@ mixin _$Identity {
       throw _privateConstructorUsedError; // This is an alias for _avatar field
   bool get signed => throw _privateConstructorUsedError;
   bool get isContact => throw _privateConstructorUsedError;
+  int get status => throw _privateConstructorUsedError;
 
   /// Serializes this Identity to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -49,7 +50,8 @@ abstract class $IdentityCopyWith<$Res> {
       String? name,
       String? avatar,
       bool signed,
-      bool isContact});
+      bool isContact,
+      int status});
 }
 
 /// @nodoc
@@ -73,6 +75,7 @@ class _$IdentityCopyWithImpl<$Res, $Val extends Identity>
     Object? avatar = freezed,
     Object? signed = null,
     Object? isContact = null,
+    Object? status = null,
   }) {
     return _then(_value.copyWith(
       mId: null == mId
@@ -99,6 +102,10 @@ class _$IdentityCopyWithImpl<$Res, $Val extends Identity>
           ? _value.isContact
           : isContact // ignore: cast_nullable_to_non_nullable
               as bool,
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as int,
     ) as $Val);
   }
 }
@@ -117,7 +124,8 @@ abstract class _$$IdentityImplCopyWith<$Res>
       String? name,
       String? avatar,
       bool signed,
-      bool isContact});
+      bool isContact,
+      int status});
 }
 
 /// @nodoc
@@ -139,6 +147,7 @@ class __$$IdentityImplCopyWithImpl<$Res>
     Object? avatar = freezed,
     Object? signed = null,
     Object? isContact = null,
+    Object? status = null,
   }) {
     return _then(_$IdentityImpl(
       mId: null == mId
@@ -165,6 +174,10 @@ class __$$IdentityImplCopyWithImpl<$Res>
           ? _value.isContact
           : isContact // ignore: cast_nullable_to_non_nullable
               as bool,
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -178,7 +191,8 @@ class _$IdentityImpl implements _Identity {
       this.name,
       this.avatar,
       required this.signed,
-      required this.isContact});
+      required this.isContact,
+      this.status = 0});
 
   factory _$IdentityImpl.fromJson(Map<String, dynamic> json) =>
       _$$IdentityImplFromJson(json);
@@ -198,10 +212,13 @@ class _$IdentityImpl implements _Identity {
   final bool signed;
   @override
   final bool isContact;
+  @override
+  @JsonKey()
+  final int status;
 
   @override
   String toString() {
-    return 'Identity(mId: $mId, pgpId: $pgpId, name: $name, avatar: $avatar, signed: $signed, isContact: $isContact)';
+    return 'Identity(mId: $mId, pgpId: $pgpId, name: $name, avatar: $avatar, signed: $signed, isContact: $isContact, status: $status)';
   }
 
   @override
@@ -215,13 +232,14 @@ class _$IdentityImpl implements _Identity {
             (identical(other.avatar, avatar) || other.avatar == avatar) &&
             (identical(other.signed, signed) || other.signed == signed) &&
             (identical(other.isContact, isContact) ||
-                other.isContact == isContact));
+                other.isContact == isContact) &&
+            (identical(other.status, status) || other.status == status));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, mId, pgpId, name, avatar, signed, isContact);
+  int get hashCode => Object.hash(
+      runtimeType, mId, pgpId, name, avatar, signed, isContact, status);
 
   /// Create a copy of Identity
   /// with the given fields replaced by the non-null parameter values.
@@ -246,7 +264,8 @@ abstract class _Identity implements Identity {
       final String? name,
       final String? avatar,
       required final bool signed,
-      required final bool isContact}) = _$IdentityImpl;
+      required final bool isContact,
+      final int status}) = _$IdentityImpl;
 
   factory _Identity.fromJson(Map<String, dynamic> json) =
       _$IdentityImpl.fromJson;
@@ -263,6 +282,8 @@ abstract class _Identity implements Identity {
   bool get signed;
   @override
   bool get isContact;
+  @override
+  int get status;
 
   /// Create a copy of Identity
   /// with the given fields replaced by the non-null parameter values.
