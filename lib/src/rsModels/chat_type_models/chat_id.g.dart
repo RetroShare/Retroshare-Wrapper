@@ -18,9 +18,10 @@ _$ChatIdImpl _$$ChatIdImplFromJson(Map<String, dynamic> json) => _$ChatIdImpl(
 
 Map<String, dynamic> _$$ChatIdImplToJson(_$ChatIdImpl instance) =>
     <String, dynamic>{
-      'broadcast_status_peer_id': instance.broadcastStatusPeerId,
-      'type': instance.type,
-      'peer_id': instance.peerId,
-      'distant_chat_id': instance.distantChatId,
-      'lobby_id': instance.lobbyId,
+      if (instance.broadcastStatusPeerId case final value?)
+        'broadcast_status_peer_id': value,
+      if (instance.type case final value?) 'type': value,
+      if (instance.peerId case final value?) 'peer_id': value,
+      if (instance.distantChatId case final value?) 'distant_chat_id': value,
+      if (instance.lobbyId case final value?) 'lobby_id': value,
     };

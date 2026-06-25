@@ -177,7 +177,8 @@ class __$$ChatIdImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(includeIfNull: false)
 class _$ChatIdImpl extends _ChatId {
   const _$ChatIdImpl(
       {@JsonKey(name: 'broadcast_status_peer_id') this.broadcastStatusPeerId,
