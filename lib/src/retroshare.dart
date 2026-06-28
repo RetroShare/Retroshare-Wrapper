@@ -1018,6 +1018,53 @@ class RsPeers {
 }
 
 // ----------------------------------------------------------------------------
+// Peer Status (online, away, busy, idle)
+// ----------------------------------------------------------------------------
+
+class RsStatus {
+  /// Get status list for all connected peers.
+  ///
+  /// Returns a map of peerId -> status value:
+  ///   0x0000 = RS_STATUS_OFFLINE
+  ///   0x0001 = RS_STATUS_AWAY
+  ///   0x0002 = RS_STATUS_BUSY
+  ///   0x0003 = RS_STATUS_ONLINE
+  ///   0x0004 = RS_STATUS_INACTIVE
+  static Future<Map<String, int>> getStatusList(
+    AuthToken authToken, {
+    http.Client? client,
+  }) async {
+    final statusMap = <String, int>{};
+    try {
+      final response = await rsApiCall(
+        '/rsStatus/getStatusList',
+        authToken: authToken,
+        client: client,
+      );
+
+      // RetroShare uses C++ parameter names: statusInfo (camelCase)
+      final statusList = response['statusInfo'] ?? response['status_info'];
+      if (statusList is List) {
+        for (final info in statusList) {
+          if (info is Map) {
+            final id = info['id'] ?? info['mPeerId'] ?? '';
+            final status = (info['status'] as num?)?.toInt() ??
+                (info['mStatus'] as num?)?.toInt() ??
+                0;
+            if (id is String && id.isNotEmpty) {
+              statusMap[id] = status;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // Status API may not be available; silently fall back to defaults
+    }
+    return statusMap;
+  }
+}
+
+// ----------------------------------------------------------------------------
 // Broadcast Discovery
 // ----------------------------------------------------------------------------
 
