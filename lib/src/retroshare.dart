@@ -1184,7 +1184,15 @@ class RsMsgs {
       lobbyTopic: lobbyTopic,
       lobbyIdentity: idToUse,
       invitedFriends: inviteList.isNotEmpty
-          ? List<String>.from(inviteList.map((e) => e.toString()))
+          ? List<String>.from(inviteList.map((e) {
+              if (e is String) return e;
+              try {
+                // If it's a Location object, we need the peer ID
+                return (e as dynamic).rsPeerId.toString();
+              } catch (_) {
+                return e.toString();
+              }
+            }))
           : [], // Use empty list instead of null
       lobbyPrivacyType: privacyType,
     );
@@ -1194,9 +1202,24 @@ class RsMsgs {
       authToken: authToken,
       params: req.toJson(),
     );
-    if (response['retval']['xint64'] > 0) {
+    
+    final rv = response['retval'];
+    bool isSuccess = false;
+    String? newLobbyId;
+
+    if (rv is Map) {
+      if (rv['xstr64'] != null && rv['xstr64'] != '0' && rv['xstr64'] != '') {
+        isSuccess = true;
+        newLobbyId = rv['xstr64'];
+      } else if (rv['xint64'] != null && rv['xint64'] != 0) {
+        isSuccess = true;
+        newLobbyId = rv['xint64'].toString();
+      }
+    }
+
+    if (isSuccess && newLobbyId != null) {
       await setLobbyAutoSubscribe(
-        response['retval']['xint64'].toString(),
+        newLobbyId,
         authToken,
       );
       return true;
@@ -2533,9 +2556,10 @@ Future<(List<Identity>, List<Identity>, List<Identity>)> getAllIdentities(
           pgpId: idsInfo[i]['mPgpId'],
           name: idsInfo[i]['mMeta']['mGroupName'],
           isContact: false,
-          status: (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence']) != null
-              ? (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence'])['mStatus'] ?? 
-                (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence'])['status'] ?? 0
+          status: (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence'] ?? idsInfo[i]['mPresenceData']) != null
+              ? (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence'] ?? idsInfo[i]['mPresenceData'])['mStatus'] ?? 
+                (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence'] ?? idsInfo[i]['mPresenceData'])['status'] ?? 
+                (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence'] ?? idsInfo[i]['mPresenceData'])['mPresenceStatus'] ?? 0
               : 0,
         ),
       );
@@ -2548,9 +2572,10 @@ Future<(List<Identity>, List<Identity>, List<Identity>)> getAllIdentities(
           pgpId: idsInfo[i]['mPgpId'],
           name: idsInfo[i]['mMeta']['mGroupName'],
           isContact: false,
-          status: (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence']) != null
-              ? (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence'])['mStatus'] ?? 
-                (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence'])['status'] ?? 0
+          status: (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence'] ?? idsInfo[i]['mPresenceData']) != null
+              ? (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence'] ?? idsInfo[i]['mPresenceData'])['mStatus'] ?? 
+                (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence'] ?? idsInfo[i]['mPresenceData'])['status'] ?? 
+                (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence'] ?? idsInfo[i]['mPresenceData'])['mPresenceStatus'] ?? 0
               : 0,
         ),
       );
