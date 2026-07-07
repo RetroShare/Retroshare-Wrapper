@@ -1198,7 +1198,7 @@ class RsMsgs {
     );
 
     final response = await rsApiCall(
-      '/rsChats/createChatLobby',
+      '/rsChat/createChatLobby',
       authToken: authToken,
       params: req.toJson(),
     );
@@ -1237,7 +1237,7 @@ class RsMsgs {
     final params = {'lobby_id': chatLobbyId.toJson(), 'autoSubscribe': subs};
 
     await rsApiCall(
-      '/rsChats/setLobbyAutoSubscribe',
+      '/rsChat/setLobbyAutoSubscribe',
       authToken: authToken,
       params: params,
     );
@@ -1253,7 +1253,7 @@ class RsMsgs {
     final params = {'lobby_id': chatLobbyId.toJson()};
 
     final response = await rsApiCall(
-      '/rsChats/getLobbyAutoSubscribe',
+      '/rsChat/getLobbyAutoSubscribe',
       authToken: authToken,
       params: params,
     );
@@ -1272,7 +1272,7 @@ class RsMsgs {
     };
 
     await rsApiCall(
-      '/rsChats/unsubscribeChatLobby',
+      '/rsChat/unsubscribeChatLobby',
       authToken: authToken,
       params: params,
     );
@@ -1299,7 +1299,7 @@ class RsMsgs {
     final params = {'id': id.toJson(), 'msg': msgTxt};
     print('DEBUG: RsMsgs.sendMessage params: ${jsonEncode(params)}');
     final response = await rsApiCall(
-      '/rsChats/sendChat',
+      '/rsChat/sendChat',
       authToken: authToken,
       params: params,
     );
@@ -1313,7 +1313,7 @@ class RsMsgs {
     AuthToken authToken,
   ) async {
     await rsApiCall(
-      '/rsChats/denyLobbyInvite',
+      '/rsChat/denyLobbyInvite',
       authToken: authToken,
       params: {
         'id': {'xstr64': lobbyId},
@@ -1326,7 +1326,7 @@ class RsMsgs {
     String rsgxsId,
     AuthToken authToken,
   ) async {
-    const mPath = '/rsChats/acceptLobbyInvite';
+    const mPath = '/rsChat/acceptLobbyInvite';
     final response = await rsApiCall(
       mPath,
       authToken: authToken,
@@ -1346,7 +1346,7 @@ class RsMsgs {
       'notify': true,
     };
     final response = await rsApiCall(
-      '/rsChats/initiateDistantChatConnexion',
+      '/rsChat/initiateDistantChatConnexion',
       authToken: authToken,
       params: params,
     );
@@ -1364,7 +1364,7 @@ class RsMsgs {
     ChatMessage aaa,
   ) async {
     final response = await rsApiCall(
-      '/rsChats/getDistantChatStatus',
+      '/rsChat/getDistantChatStatus',
       authToken: authToken,
       params: {'pid': pid},
     );
@@ -1387,7 +1387,7 @@ class RsMsgs {
   ) async {
     final unsubscribedChatLobby = <VisibleChatLobbyRecord>[];
     final chatLobbies = await rsApiCall(
-      '/rsChats/getListOfNearbyChatLobbies',
+      '/rsChat/getListOfNearbyChatLobbies',
       authToken: authToken,
     );
     for (final visible in chatLobbies['public_lobbies']) {
@@ -1403,7 +1403,7 @@ class RsMsgs {
     String idToUse,
     AuthToken authToken,
   ) async {
-    const mPath = '/rsChats/joinVisibleChatLobby';
+    const mPath = '/rsChat/joinVisibleChatLobby';
     final mParams = {
       'lobby_id': {'xstr64': chatId},
       'own_id': idToUse,
@@ -1422,7 +1422,7 @@ class RsMsgs {
     AuthToken authToken,
   ) async {
     final response = await rsApiCall(
-      '/rsChats/closeDistantChatConnexion',
+      '/rsChat/closeDistantChatConnexion',
       authToken: authToken,
       params: {'pid': chatId},
     );
@@ -1434,7 +1434,7 @@ class RsMsgs {
     String lobbyId,
     AuthToken authToken,
   ) async {
-    const mPath = '/rsChats/getChatLobbyInfo';
+    const mPath = '/rsChat/getChatLobbyInfo';
     final mParams = {
       'id': {'xstr64': lobbyId},
     };
@@ -1449,14 +1449,14 @@ class RsMsgs {
   }
 
   static Future<dynamic> getPendingChatLobbyInvites(AuthToken authToken) async {
-    const mPath = '/rsChats/getPendingChatLobbyInvites';
+    const mPath = '/rsChat/getPendingChatLobbyInvites';
     final response = await rsApiCall(mPath, authToken: authToken);
     print(response);
     return response['invites'];
   }
 
   static Future<dynamic> getSubscribedChatLobbies(AuthToken authToken) async {
-    const mPath = '/rsChats/getChatLobbyList';
+    const mPath = '/rsChat/getChatLobbyList';
     final response = await rsApiCall(mPath, authToken: authToken);
     return response['cl_list'];
   }
@@ -1468,7 +1468,7 @@ class RsMsgs {
     final mParams = {
       'id': {'xstr64': lobbyId},
     };
-    const mPath = '/rsChats/getChatLobbyInfo';
+    const mPath = '/rsChat/getChatLobbyInfo';
     final response =
         await rsApiCall(mPath, authToken: authToken, params: mParams);
     return response['info']['gxs_ids'];
