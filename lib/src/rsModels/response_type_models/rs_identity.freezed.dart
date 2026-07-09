@@ -27,7 +27,9 @@ mixin _$Identity {
       throw _privateConstructorUsedError; // This is an alias for _avatar field
   bool get signed => throw _privateConstructorUsedError;
   bool get isContact => throw _privateConstructorUsedError;
-  int get status => throw _privateConstructorUsedError;
+  int get status =>
+      throw _privateConstructorUsedError; // 0: Offline, 1: Online, 2: Away, 3: Busy
+  String? get originator => throw _privateConstructorUsedError;
 
   /// Serializes this Identity to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -51,7 +53,8 @@ abstract class $IdentityCopyWith<$Res> {
       String? avatar,
       bool signed,
       bool isContact,
-      int status});
+      int status,
+      String? originator});
 }
 
 /// @nodoc
@@ -76,6 +79,7 @@ class _$IdentityCopyWithImpl<$Res, $Val extends Identity>
     Object? signed = null,
     Object? isContact = null,
     Object? status = null,
+    Object? originator = freezed,
   }) {
     return _then(_value.copyWith(
       mId: null == mId
@@ -106,6 +110,10 @@ class _$IdentityCopyWithImpl<$Res, $Val extends Identity>
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
               as int,
+      originator: freezed == originator
+          ? _value.originator
+          : originator // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -125,7 +133,8 @@ abstract class _$$IdentityImplCopyWith<$Res>
       String? avatar,
       bool signed,
       bool isContact,
-      int status});
+      int status,
+      String? originator});
 }
 
 /// @nodoc
@@ -148,6 +157,7 @@ class __$$IdentityImplCopyWithImpl<$Res>
     Object? signed = null,
     Object? isContact = null,
     Object? status = null,
+    Object? originator = freezed,
   }) {
     return _then(_$IdentityImpl(
       mId: null == mId
@@ -178,6 +188,10 @@ class __$$IdentityImplCopyWithImpl<$Res>
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
               as int,
+      originator: freezed == originator
+          ? _value.originator
+          : originator // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -192,7 +206,8 @@ class _$IdentityImpl implements _Identity {
       this.avatar,
       required this.signed,
       required this.isContact,
-      this.status = 0});
+      this.status = 0,
+      this.originator});
 
   factory _$IdentityImpl.fromJson(Map<String, dynamic> json) =>
       _$$IdentityImplFromJson(json);
@@ -215,10 +230,13 @@ class _$IdentityImpl implements _Identity {
   @override
   @JsonKey()
   final int status;
+// 0: Offline, 1: Online, 2: Away, 3: Busy
+  @override
+  final String? originator;
 
   @override
   String toString() {
-    return 'Identity(mId: $mId, pgpId: $pgpId, name: $name, avatar: $avatar, signed: $signed, isContact: $isContact, status: $status)';
+    return 'Identity(mId: $mId, pgpId: $pgpId, name: $name, avatar: $avatar, signed: $signed, isContact: $isContact, status: $status, originator: $originator)';
   }
 
   @override
@@ -233,13 +251,15 @@ class _$IdentityImpl implements _Identity {
             (identical(other.signed, signed) || other.signed == signed) &&
             (identical(other.isContact, isContact) ||
                 other.isContact == isContact) &&
-            (identical(other.status, status) || other.status == status));
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.originator, originator) ||
+                other.originator == originator));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, mId, pgpId, name, avatar, signed, isContact, status);
+  int get hashCode => Object.hash(runtimeType, mId, pgpId, name, avatar, signed,
+      isContact, status, originator);
 
   /// Create a copy of Identity
   /// with the given fields replaced by the non-null parameter values.
@@ -265,7 +285,8 @@ abstract class _Identity implements Identity {
       final String? avatar,
       required final bool signed,
       required final bool isContact,
-      final int status}) = _$IdentityImpl;
+      final int status,
+      final String? originator}) = _$IdentityImpl;
 
   factory _Identity.fromJson(Map<String, dynamic> json) =
       _$IdentityImpl.fromJson;
@@ -283,7 +304,9 @@ abstract class _Identity implements Identity {
   @override
   bool get isContact;
   @override
-  int get status;
+  int get status; // 0: Offline, 1: Online, 2: Away, 3: Busy
+  @override
+  String? get originator;
 
   /// Create a copy of Identity
   /// with the given fields replaced by the non-null parameter values.
