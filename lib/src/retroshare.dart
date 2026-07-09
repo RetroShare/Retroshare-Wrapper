@@ -2556,6 +2556,7 @@ Future<(List<Identity>, List<Identity>, List<Identity>)> getAllIdentities(
           pgpId: idsInfo[i]['mPgpId'],
           name: idsInfo[i]['mMeta']['mGroupName'],
           isContact: false,
+          originator: idsInfo[i]['mMeta'] != null ? idsInfo[i]['mMeta']['mOriginator'] : null,
           status: (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence'] ?? idsInfo[i]['mPresenceData']) != null
               ? (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence'] ?? idsInfo[i]['mPresenceData'])['mStatus'] ?? 
                 (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence'] ?? idsInfo[i]['mPresenceData'])['status'] ?? 
@@ -2572,6 +2573,7 @@ Future<(List<Identity>, List<Identity>, List<Identity>)> getAllIdentities(
           pgpId: idsInfo[i]['mPgpId'],
           name: idsInfo[i]['mMeta']['mGroupName'],
           isContact: false,
+          originator: idsInfo[i]['mMeta'] != null ? idsInfo[i]['mMeta']['mOriginator'] : null,
           status: (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence'] ?? idsInfo[i]['mPresenceData']) != null
               ? (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence'] ?? idsInfo[i]['mPresenceData'])['mStatus'] ?? 
                 (idsInfo[i]['mPresence'] ?? idsInfo[i]['presence'] ?? idsInfo[i]['mPresenceData'])['status'] ?? 
@@ -2630,7 +2632,10 @@ Future<(Identity, bool)> getKnownIdentity(
     identity = identity.copyWith(status: p['mStatus'] ?? p['status'] ?? p['mPresenceStatus'] ?? 0);
   }
 
-  identity = identity.copyWith(isContact: true);
+  identity = identity.copyWith(
+    isContact: true,
+    originator: idsInfo['mMeta'] != null ? idsInfo['mMeta']['mOriginator'] : null,
+  );
 
   // Return a Dart record instead of Tuple2
   return (identity, identity.signed);

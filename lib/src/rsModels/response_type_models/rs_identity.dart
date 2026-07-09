@@ -13,6 +13,7 @@ class Identity with _$Identity {
     required bool signed,
     required bool isContact,
     @Default(0) int status, // 0: Offline, 1: Online, 2: Away, 3: Busy
+    String? originator,
   }) = _Identity;
 
   factory Identity.fromJson(Map<String, dynamic> json) =>
