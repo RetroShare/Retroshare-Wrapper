@@ -26,6 +26,7 @@ mixin _$Location {
   String get locationName => throw _privateConstructorUsedError;
   bool get isOnline => throw _privateConstructorUsedError;
   int get status => throw _privateConstructorUsedError;
+  String get statusMessage => throw _privateConstructorUsedError;
 
   /// Serializes this Location to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -48,7 +49,8 @@ abstract class $LocationCopyWith<$Res> {
       String accountName,
       String locationName,
       bool isOnline,
-      int status});
+      int status,
+      String statusMessage});
 }
 
 /// @nodoc
@@ -72,6 +74,7 @@ class _$LocationCopyWithImpl<$Res, $Val extends Location>
     Object? locationName = null,
     Object? isOnline = null,
     Object? status = null,
+    Object? statusMessage = null,
   }) {
     return _then(_value.copyWith(
       rsPeerId: null == rsPeerId
@@ -98,6 +101,10 @@ class _$LocationCopyWithImpl<$Res, $Val extends Location>
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
               as int,
+      statusMessage: null == statusMessage
+          ? _value.statusMessage
+          : statusMessage // ignore: cast_nullable_to_non_nullable
+              as String,
     ) as $Val);
   }
 }
@@ -116,7 +123,8 @@ abstract class _$$LocationImplCopyWith<$Res>
       String accountName,
       String locationName,
       bool isOnline,
-      int status});
+      int status,
+      String statusMessage});
 }
 
 /// @nodoc
@@ -138,6 +146,7 @@ class __$$LocationImplCopyWithImpl<$Res>
     Object? locationName = null,
     Object? isOnline = null,
     Object? status = null,
+    Object? statusMessage = null,
   }) {
     return _then(_$LocationImpl(
       rsPeerId: null == rsPeerId
@@ -164,6 +173,10 @@ class __$$LocationImplCopyWithImpl<$Res>
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
               as int,
+      statusMessage: null == statusMessage
+          ? _value.statusMessage
+          : statusMessage // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -177,7 +190,8 @@ class _$LocationImpl implements _Location {
       this.accountName = '',
       this.locationName = '',
       this.isOnline = false,
-      this.status = 0});
+      this.status = 0,
+      this.statusMessage = ''});
 
   factory _$LocationImpl.fromJson(Map<String, dynamic> json) =>
       _$$LocationImplFromJson(json);
@@ -200,10 +214,13 @@ class _$LocationImpl implements _Location {
   @override
   @JsonKey()
   final int status;
+  @override
+  @JsonKey()
+  final String statusMessage;
 
   @override
   String toString() {
-    return 'Location(rsPeerId: $rsPeerId, rsGpgId: $rsGpgId, accountName: $accountName, locationName: $locationName, isOnline: $isOnline, status: $status)';
+    return 'Location(rsPeerId: $rsPeerId, rsGpgId: $rsGpgId, accountName: $accountName, locationName: $locationName, isOnline: $isOnline, status: $status, statusMessage: $statusMessage)';
   }
 
   @override
@@ -220,13 +237,15 @@ class _$LocationImpl implements _Location {
                 other.locationName == locationName) &&
             (identical(other.isOnline, isOnline) ||
                 other.isOnline == isOnline) &&
-            (identical(other.status, status) || other.status == status));
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.statusMessage, statusMessage) ||
+                other.statusMessage == statusMessage));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, rsPeerId, rsGpgId, accountName,
-      locationName, isOnline, status);
+      locationName, isOnline, status, statusMessage);
 
   /// Create a copy of Location
   /// with the given fields replaced by the non-null parameter values.
@@ -251,7 +270,8 @@ abstract class _Location implements Location {
       final String accountName,
       final String locationName,
       final bool isOnline,
-      final int status}) = _$LocationImpl;
+      final int status,
+      final String statusMessage}) = _$LocationImpl;
 
   factory _Location.fromJson(Map<String, dynamic> json) =
       _$LocationImpl.fromJson;
@@ -268,6 +288,8 @@ abstract class _Location implements Location {
   bool get isOnline;
   @override
   int get status;
+  @override
+  String get statusMessage;
 
   /// Create a copy of Location
   /// with the given fields replaced by the non-null parameter values.

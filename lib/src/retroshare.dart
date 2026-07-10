@@ -762,7 +762,7 @@ class RsPeers {
     if (!success) {
       throw Exception('Could not get short invite for $sslId');
     }
-    return response['invite'].substring(31);
+    return Uri.decodeComponent(response['invite'].substring(31));
   }
 
   static Future<bool> addSslOnlyFriend(
@@ -1472,6 +1472,19 @@ class RsMsgs {
     final response =
         await rsApiCall(mPath, authToken: authToken, params: mParams);
     return response['info']['gxs_ids'];
+  }
+
+  static Future<String> getCustomStateString(
+    String peerId,
+    AuthToken authToken,
+  ) async {
+    final mParams = {
+      'peer_id': peerId,
+    };
+    const mPath = '/rsChats/getCustomStateString';
+    final response =
+        await rsApiCall(mPath, authToken: authToken, params: mParams);
+    return response['retval'] ?? '';
   }
 }
 

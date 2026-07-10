@@ -12,6 +12,7 @@ class Location with _$Location {
     @Default('') String locationName,
     @Default(false) bool isOnline,
     @Default(0) int status,
+    @Default('') String statusMessage,
   }) = _Location;
 
   factory Location.fromJson(Map<String, dynamic> json) =>
