@@ -14,6 +14,7 @@ _$LocationImpl _$$LocationImplFromJson(Map<String, dynamic> json) =>
       locationName: json['locationName'] as String? ?? '',
       isOnline: json['isOnline'] as bool? ?? false,
       status: (json['status'] as num?)?.toInt() ?? 0,
+      statusMessage: json['statusMessage'] as String? ?? '',
     );
 
 Map<String, dynamic> _$$LocationImplToJson(_$LocationImpl instance) =>
@@ -24,4 +25,5 @@ Map<String, dynamic> _$$LocationImplToJson(_$LocationImpl instance) =>
       'locationName': instance.locationName,
       'isOnline': instance.isOnline,
       'status': instance.status,
+      'statusMessage': instance.statusMessage,
     };
