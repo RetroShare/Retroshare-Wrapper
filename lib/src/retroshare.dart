@@ -371,11 +371,15 @@ class RsLoginHelper {
   /// Return 0 if everything is Ok
   static Future<dynamic> requestLogIn(
     dynamic selectedAccount,
-    String password,
-  ) async {
+    String password, [
+    String? apiUser,
+    String? apiPass,
+  ]) async {
     final accountDetails = {
       'account': selectedAccount.locationId,
       'password': password,
+      if (apiUser != null) 'apiUser': apiUser,
+      if (apiPass != null) 'apiPass': apiPass,
     };
     const mPath = '/rsLoginHelper/attemptLogin';
     final response = await rsApiCall(mPath, params: accountDetails);
@@ -411,15 +415,15 @@ class RsLoginHelper {
     String username,
     String password, [
     String nodeName = 'mobile',
+    String? apiUser,
+    String? apiPass,
   ]) async {
     final mParams = {
       'locationName': nodeName,
       'pgpName': username,
       'password': password,
-      'apiUser': username,
-      /* TODO(G10h4ck): The new token scheme permit arbitrarly more secure
-       * options to avoid sending PGP password at each request. */
-      'apiPass': password,
+      'apiUser': apiUser ?? username,
+      'apiPass': apiPass ?? password,
     };
     const mPath = '/rsLoginHelper/createLocationV2';
     final response = await rsApiCall(mPath, params: mParams);
