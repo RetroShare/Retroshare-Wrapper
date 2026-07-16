@@ -580,13 +580,14 @@ class RsIdentity {
   static Future<Identity> createIdentity(
     Identity identity,
     RsGxsImage avatar,
-    AuthToken authToken,
-  ) async {
+    AuthToken authToken, [
+    String? pgpPassword,
+  ]) async {
     try {
       final params = {
         'name': identity.name ?? '',
         'pseudonimous': !identity.signed,
-        'pgpPassword': authToken.password,
+        'pgpPassword': pgpPassword ?? authToken.password,
       };
       params['avatar'] = avatar.toJson();
       const mPath = '/rsIdentity/createIdentity';
@@ -654,13 +655,14 @@ class RsIdentity {
   static Future<bool> updateIdentity(
     Identity identity,
     RsGxsImage avatar,
-    AuthToken authToken,
-  ) async {
+    AuthToken authToken, [
+    String? pgpPassword,
+  ]) async {
     final params = {
       'name': identity.name,
       'id': identity.mId,
       'pseudonimous': !identity.signed,
-      'pgpPassword': authToken.password,
+      'pgpPassword': pgpPassword ?? authToken.password,
     };
     if (identity.avatar != null) params['avatar'] = avatar.toJson();
     const mPath = '/rsIdentity/updateIdentity';
