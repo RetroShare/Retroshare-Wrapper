@@ -768,7 +768,15 @@ class RsPeers {
     if (!success) {
       throw Exception('Could not get short invite for $sslId');
     }
-    return Uri.decodeComponent(response['invite'].substring(31));
+    final inviteStr = response['invite'] as String? ?? '';
+    try {
+      final inviteUri = Uri.parse(inviteStr);
+      final shortKey = inviteUri.queryParameters['rsInvite'];
+      if (shortKey != null) {
+        return Uri.decodeComponent(shortKey);
+      }
+    } catch (_) {}
+    return Uri.decodeComponent(inviteStr.substring(31));
   }
 
   static Future<bool> addSslOnlyFriend(
