@@ -2238,28 +2238,28 @@ class RsJsonApi {
 // ----------------------------------------------------------------------------
 
 class RsConfig {
-  static Future<Map> getMaxDataRates() async {
-    final response = await rsApiCall('/rsConfig/getMaxDataRates');
-    final retval = response['retval'];
-    if (!((retval is bool && retval) || (retval is int && retval == 1))) print('Could not get data rates');
-    final rates = {'inKb': response['inKb'], 'outKb': response['outKb']};
-    return rates;
-  }
+//  static Future<Map> getMaxDataRates() async {
+//    final response = await rsApiCall('/rsConfig/getMaxDataRates');
+//    final retval = response['retval'];
+//    if (!((retval is bool && retval) || (retval is int && retval == 1))) print('Could not get data rates');
+//    final rates = {'inKb': response['inKb'], 'outKb': response['outKb']};
+//    return rates;
+//  }
 
-  static Future<Map> setMaxDataRates(int downKb, int upKb) async {
-    final response = await rsApiCall(
-      '/rsConfig/setMaxDataRates',
-      params: {
-        'inKb': downKb,
-        'outKb': upKb,
-        'inKbWhenIdle': 0,
-        'outKbWhenIdle': 0,
-      },
-    );
-    final retval = response['retval'];
-    if (!((retval is bool && retval) || (retval is int && retval == 1))) print('Could not set data rates $response');
-    return response;
-  }
+//  static Future<Map> setMaxDataRates(int downKb, int upKb) async {
+//    final response = await rsApiCall(
+//      '/rsConfig/setMaxDataRates',
+//      params: {
+//        'inKb': downKb,
+//        'outKb': upKb,
+//        'inKbWhenIdle': 0,
+//        'outKbWhenIdle': 0,
+//      },
+//    );
+//    final retval = response['retval'];
+//    if (!((retval is bool && retval) || (retval is int && retval == 1))) print('Could not set data rates $response');
+//    return response;
+//  }
 }
 
 // ----------------------------------------------------------------------------
